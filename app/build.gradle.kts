@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.devtools.ksp) // 追加
+    id("com.google.dagger.hilt.android") // Hilt Gradle plugin
 }
 
 android {
@@ -58,6 +59,10 @@ dependencies {
     ksp(libs.androidx.room.compiler) //  ここだけimplementation をkspに変更
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.navigation.compose)
+    //
+    implementation("com.google.dagger:hilt-android:2.56.2") // 最新のHiltバージョンに合わせる
+    ksp("com.google.dagger:hilt-compiler:2.56.2") // kapt または ksp を使用
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     //
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

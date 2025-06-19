@@ -30,28 +30,26 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.tsubushiro.kaumemo.data.AppDatabase
 import com.tsubushiro.kaumemo.data.ShoppingList
-import com.tsubushiro.kaumemo.data.ShoppingRepository
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShoppingListsScreen(
     navController: NavController, // 画面遷移のためのNavController
     // ViewModelを引数で受け取るためのFactory
-    viewModel: ShoppingListsViewModel = viewModel(
-        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                val db = AppDatabase.getDatabase(navController.context) // コンテキストはNavControllerから取得
-                val repository = ShoppingRepository(db.shoppingListDao(), db.shoppingItemDao())
-                @Suppress("UNCHECKED_CAST")
-                return ShoppingListsViewModel(repository) as T
-            }
-        }
-    )
+//    viewModel: ShoppingListsViewModel = viewModel(
+//        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+//            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+//                val db = AppDatabase.getDatabase(navController.context) // コンテキストはNavControllerから取得
+//                val repository = ShoppingRepository(db.shoppingListDao(), db.shoppingItemDao())
+//                @Suppress("UNCHECKED_CAST")
+//                return ShoppingListsViewModel(repository) as T
+//            }
+//        }
+//    )
+    viewModel: ShoppingListsViewModel = hiltViewModel() // ここを変更
 ) {
     val shoppingLists by viewModel.shoppingLists.collectAsState() // ViewModelからリストの状態を収集
     var showAddListDialog by remember { mutableStateOf(false) } // リスト追加ダイアログの表示状態

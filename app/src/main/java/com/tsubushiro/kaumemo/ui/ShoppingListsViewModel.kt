@@ -4,13 +4,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tsubushiro.kaumemo.data.ShoppingList
 import com.tsubushiro.kaumemo.data.ShoppingRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.Dispatchers // 追加
+import javax.inject.Inject
 
-class ShoppingListsViewModel(private val repository: ShoppingRepository) : ViewModel() {
+@HiltViewModel // ViewModelにHiltを適用
+class ShoppingListsViewModel @Inject constructor( // @Injectでリポジトリを注入してもらう
+    private val repository: ShoppingRepository
+): ViewModel() {
 
     // 全ての買い物リストをFlowとして公開し、UIが監視できるようにする
     val shoppingLists: StateFlow<List<ShoppingList>> =

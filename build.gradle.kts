@@ -4,4 +4,5 @@ plugins {
     alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.kotlin.compose) apply false
     alias(libs.plugins.google.devtools.ksp) apply false // 追加
+    id("com.google.dagger.hilt.android") version "2.56.2" apply false // 最新のHiltバージョンに合わせる
 }

@@ -17,7 +17,9 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.tsubushiro.kaumemo.ui.ShoppingListsScreen
 import com.tsubushiro.kaumemo.ui.theme.KaumemoTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint // ここにHiltのエントリーポイントアノテーションを追加
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
