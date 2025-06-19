@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.google.devtools.ksp) // 追加
 }
 
 android {
@@ -49,6 +50,15 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    // 追加したパッケージ
+    // 「Project Structure」→[Dependencies」「app」で[Declared Dependencies」のプラスボタンより「Library Dependency」を選択
+    //  直接書くよりもメニューから選択したほうが正式
+    // https://codeforfun.jp/android-room-and-ksp-settings/
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler) //  ここだけimplementation をkspに変更
+    implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.navigation.compose)
+    //
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
