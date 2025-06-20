@@ -15,6 +15,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.tsubushiro.kaumemo.ui.ShoppingItemsScreen
 import com.tsubushiro.kaumemo.ui.ShoppingListsScreen
 import com.tsubushiro.kaumemo.ui.theme.KaumemoTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -42,9 +43,13 @@ class MainActivity : ComponentActivity() {
                             "shopping_items_route/{listId}",
                             arguments = listOf(navArgument("listId") { type = NavType.IntType })
                         ) { backStackEntry ->
-                            val listId = backStackEntry.arguments?.getInt("listId")
-                            // TODO: Day 7でShoppingItemsScreenを呼び出す
-                            Text(text = "アイテム表示画面 (リストID: $listId)", modifier = Modifier.fillMaxSize())
+                            val listId = backStackEntry.arguments?.getInt("listId") // listIdを取得
+                            if (listId != null) {
+                                ShoppingItemsScreen(navController = navController, listId = listId) // ここでShoppingItemsScreenを呼び出す
+                            } else {
+                                // エラーハンドリング (listIdがnullの場合)
+                                Text("エラー: リストIDがありません", modifier = Modifier.fillMaxSize())
+                            }
                         }
                     }
                 }
