@@ -69,6 +69,14 @@ fun ShoppingListsScreen(
             FloatingActionButton(onClick = { showAddListDialog = true }) {
                 Icon(Icons.Filled.Add, "新しいリストを追加")
             }
+        },
+        // ★ ここにbottomBarを追加し、広告Composableを配置 ★
+        bottomBar = {
+            // Spacerなどを使い、広告の下にパディングを入れると見栄えが良くなる
+            Column {
+                AdViewComposable(modifier = Modifier.fillMaxWidth())
+                Spacer(modifier = Modifier.height(16.dp)) // 広告の下に余白
+            }
         }
     ) { paddingValues ->
         LazyColumn(

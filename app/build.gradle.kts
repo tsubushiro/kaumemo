@@ -56,6 +56,7 @@ dependencies {
     //  直接書くよりもメニューから選択したほうが正式
     // https://codeforfun.jp/android-room-and-ksp-settings/
     implementation(libs.androidx.room.runtime)
+    implementation(libs.play.services.ads)
     ksp(libs.androidx.room.compiler) //  ここだけimplementation をkspに変更
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.navigation.compose)

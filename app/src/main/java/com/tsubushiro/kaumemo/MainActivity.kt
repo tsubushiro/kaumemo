@@ -10,13 +10,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import com.tsubushiro.kaumemo.ui.ShoppingItemsScreen
-import com.tsubushiro.kaumemo.ui.ShoppingListsScreen
+import com.google.android.gms.ads.MobileAds
+import com.tsubushiro.kaumemo.ui.AppNavHost
 import com.tsubushiro.kaumemo.ui.theme.KaumemoTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -30,28 +25,34 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // ナビゲーションコントローラーを作成
-                    val navController = rememberNavController()
+                    // ★ ここでMobile Ads SDKを初期化 ★
+                    MobileAds.initialize(this) {}
 
-                    // ナビゲーションホストを定義 (Day 8のAppNavHostの簡易版)
-                    NavHost(navController = navController, startDestination = "shopping_lists_route") {
-                        composable("shopping_lists_route") {
-                            ShoppingListsScreen(navController = navController)
-                        }
-                        // Day 7で実装する個別リスト詳細画面のプレースホルダー
-                        composable(
-                            "shopping_items_route/{listId}",
-                            arguments = listOf(navArgument("listId") { type = NavType.IntType })
-                        ) { backStackEntry ->
-                            val listId = backStackEntry.arguments?.getInt("listId") // listIdを取得
-                            if (listId != null) {
-                                ShoppingItemsScreen(navController = navController, listId = listId) // ここでShoppingItemsScreenを呼び出す
-                            } else {
-                                // エラーハンドリング (listIdがnullの場合)
-                                Text("エラー: リストIDがありません", modifier = Modifier.fillMaxSize())
-                            }
-                        }
-                    }
+                    // ★ AppNavHost を呼び出す ★
+                    AppNavHost()
+
+//                    // ナビゲーションコントローラーを作成
+//                    val navController = rememberNavController()
+//
+//                    // ナビゲーションホストを定義 (Day 8のAppNavHostの簡易版)
+//                    NavHost(navController = navController, startDestination = "shopping_lists_route") {
+//                        composable("shopping_lists_route") {
+//                            ShoppingListsScreen(navController = navController)
+//                        }
+//                        // Day 7で実装する個別リスト詳細画面のプレースホルダー
+//                        composable(
+//                            "shopping_items_route/{listId}",
+//                            arguments = listOf(navArgument("listId") { type = NavType.IntType })
+//                        ) { backStackEntry ->
+//                            val listId = backStackEntry.arguments?.getInt("listId") // listIdを取得
+//                            if (listId != null) {
+//                                ShoppingItemsScreen(navController = navController, listId = listId) // ここでShoppingItemsScreenを呼び出す
+//                            } else {
+//                                // エラーハンドリング (listIdがnullの場合)
+//                                Text("エラー: リストIDがありません", modifier = Modifier.fillMaxSize())
+//                            }
+//                        }
+//                    }
                 }
             }
         }
