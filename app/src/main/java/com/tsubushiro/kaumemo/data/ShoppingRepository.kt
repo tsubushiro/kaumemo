@@ -23,7 +23,7 @@ class ShoppingRepository(
         shoppingListDao.delete(shoppingList)
     }
 
-    suspend fun getShoppingListById(listId: Int): ShoppingList? {
+    fun getShoppingListById(listId: Int): Flow<ShoppingList?> {
         return shoppingListDao.getShoppingListById(listId)
     }
 

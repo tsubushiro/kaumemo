@@ -22,6 +22,11 @@ interface ShoppingListDao {
     @Query("SELECT * FROM shopping_lists ORDER BY createdAt DESC")
     fun getAllShoppingLists(): Flow<List<ShoppingList>> // 全てのリストを日付降順で取得、Flowで変更を監視
 
+//    @Query("SELECT * FROM shopping_lists WHERE id = :listId")
+//    suspend fun getShoppingListById(listId: Int): ShoppingList? // 特定IDのリストを取得
+
+    // ★ 新規追加: IDで特定の買い物リストを取得するメソッド ★
     @Query("SELECT * FROM shopping_lists WHERE id = :listId")
-    suspend fun getShoppingListById(listId: Int): ShoppingList? // 特定IDのリストを取得
+    fun getShoppingListById(listId: Int): Flow<ShoppingList?> // Flow<ShoppingList?> を返す
+
 }

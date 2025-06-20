@@ -52,6 +52,9 @@ fun ShoppingItemsScreen(
     listId: Int, // ナビゲーション引数としてリストIDを受け取る
     viewModel: ShoppingItemsViewModel = hiltViewModel()
 ) {
+    // ★ ViewModelからリスト名を収集 ★
+    val shoppingListName by viewModel.shoppingListName.collectAsState()
+
     val shoppingItems by viewModel.shoppingItems.collectAsState() // ViewModelからアイテムの状態を収集
     var showAddItemDialog by remember { mutableStateOf(false) } // アイテム追加ダイアログ表示状態
     var showEditItemDialog by remember { mutableStateOf(false) } // アイテム編集ダイアログ表示状態
@@ -61,12 +64,13 @@ fun ShoppingItemsScreen(
 
     // TODO: リスト名を表示するために、別途ShoppingListDaoからリスト名を取得するロジックが必要になる
     // 今回は簡易的に「リストID: $listId」をタイトルにする
-    val listName = "リストID: $listId" // 仮のリスト名
+//    val listName = "リストID: $listId" // 仮のリスト名
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(listName) },
+//                title = { Text(listName) },
+                title = { Text(shoppingListName) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "戻る")

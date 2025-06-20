@@ -9,6 +9,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -21,6 +22,19 @@ class ShoppingItemsViewModel @Inject constructor(
 
     // ナビゲーション引数からlistIdを取得
     private val listId: Int = checkNotNull(savedStateHandle["listId"])
+
+    // ★ ショッピングリスト名を公開するStateFlow ★
+    val shoppingListName: StateFlow<String> =
+        repository.getShoppingListById(listId) // IDで特定のリストを取得するDAOメソッドを呼び出す
+            .map { shoppingList ->
+                shoppingList?.name ?: "不明なリスト" // リストが見つからない場合はデフォルト名
+            }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = "読込中..." // 初期値
+            )
+
 
     // 特定のリストに紐づく買い物アイテムを公開
     val shoppingItems: StateFlow<List<ShoppingItem>> =
