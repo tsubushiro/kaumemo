@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -55,6 +56,8 @@ fun ShoppingItemsScreen(
     var showAddItemDialog by remember { mutableStateOf(false) } // アイテム追加ダイアログ表示状態
     var showEditItemDialog by remember { mutableStateOf(false) } // アイテム編集ダイアログ表示状態
     var editingItem by remember { mutableStateOf<ShoppingItem?>(null) } // 編集中のアイテム
+    var showConfirmDeleteDialog by remember { mutableStateOf(false) } // 削除確認ダイアログの表示状態
+    var itemToDelete by remember { mutableStateOf<ShoppingItem?>(null) } // 削除対象のアイテム
 
     // TODO: リスト名を表示するために、別途ShoppingListDaoからリスト名を取得するロジックが必要になる
     // 今回は簡易的に「リストID: $listId」をタイトルにする
@@ -102,9 +105,14 @@ fun ShoppingItemsScreen(
                             editingItem = itemToEdit
                             showEditItemDialog = true
                         },
-                        onDeleteClick = { itemToDelete ->
-                            viewModel.deleteShoppingItem(itemToDelete)
+                        // ★ 削除ボタンが押されたら（確認ダイアログ表示） ★
+                        onDeleteClick = { itemToDeleteConfirm ->
+                            itemToDelete = itemToDeleteConfirm
+                            showConfirmDeleteDialog = true
                         }
+//                        onDeleteClick = { itemToDelete ->
+//                            viewModel.deleteShoppingItem(itemToDelete)
+//                        }
                     )
                 }
             }
@@ -134,6 +142,22 @@ fun ShoppingItemsScreen(
             onDismiss = {
                 showEditItemDialog = false
                 editingItem = null
+            }
+        )
+    }
+
+    // ★ 新規追加: 削除確認ダイアログ ★
+    if (showConfirmDeleteDialog && itemToDelete != null) {
+        ConfirmDeleteDialog(
+            itemName = itemToDelete!!.name,
+            onConfirmDelete = {
+                viewModel.deleteShoppingItem(itemToDelete!!) // 削除実行
+                showConfirmDeleteDialog = false
+                itemToDelete = null
+            },
+            onDismiss = {
+                showConfirmDeleteDialog = false
+                itemToDelete = null
             }
         )
     }
@@ -260,6 +284,32 @@ fun EditItemDialog(
                 }
             ) {
                 Text("更新")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("キャンセル")
+            }
+        }
+    )
+}
+
+@Composable
+fun ConfirmDeleteDialog(
+    itemName: String, // 削除するアイテムの名前
+    onConfirmDelete: () -> Unit, // 削除確定時のコールバック
+    onDismiss: () -> Unit // ダイアログを閉じるコールバック
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("削除の確認") },
+        text = { Text("「$itemName」を削除してもよろしいですか？") },
+        confirmButton = {
+            Button(
+                onClick = onConfirmDelete,
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error) // 削除ボタンは赤色に
+            ) {
+                Text("削除")
             }
         },
         dismissButton = {
