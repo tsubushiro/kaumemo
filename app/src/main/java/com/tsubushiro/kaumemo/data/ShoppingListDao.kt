@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ShoppingListDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(shoppingList: ShoppingList) // リストの追加 (既存があれば置換)
+    suspend fun insert(shoppingList: ShoppingList):Long // リストの追加 (既存があれば置換)
 
     @Update
     suspend fun update(shoppingList: ShoppingList) // リストの更新

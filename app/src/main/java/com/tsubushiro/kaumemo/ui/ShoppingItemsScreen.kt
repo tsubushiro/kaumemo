@@ -50,7 +50,7 @@ import com.tsubushiro.kaumemo.data.ShoppingItem
 @Composable
 fun ShoppingItemsScreen(
     navController: NavController,
-    listId: Int, // ナビゲーション引数としてリストIDを受け取る
+    listId: Int?, // ナビゲーション引数としてリストIDを受け取る
     viewModel: ShoppingItemsViewModel = hiltViewModel()
 ) {
     // ★ ViewModelからリスト名を収集 ★
@@ -63,7 +63,6 @@ fun ShoppingItemsScreen(
     var showConfirmDeleteDialog by remember { mutableStateOf(false) } // 削除確認ダイアログの表示状態
     var itemToDelete by remember { mutableStateOf<ShoppingItem?>(null) } // 削除対象のアイテム
 
-    // TODO: リスト名を表示するために、別途ShoppingListDaoからリスト名を取得するロジックが必要になる
     // 今回は簡易的に「リストID: $listId」をタイトルにする
 //    val listName = "リストID: $listId" // 仮のリスト名
 

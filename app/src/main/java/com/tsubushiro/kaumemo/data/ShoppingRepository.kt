@@ -12,8 +12,12 @@ class ShoppingRepository(
         return shoppingListDao.getAllShoppingLists()
     }
 
-    suspend fun insertShoppingList(shoppingList: ShoppingList) {
-        shoppingListDao.insert(shoppingList)
+//    suspend fun insertShoppingList(shoppingList: ShoppingList):Long {
+//        shoppingListDao.insert(shoppingList)
+//    }
+
+    suspend fun insertShoppingList(shoppingList: ShoppingList): Long { // ★ここを 'Long' に変更★
+        return shoppingListDao.insert(shoppingList)
     }
 
     suspend fun updateShoppingList(shoppingList: ShoppingList) {
@@ -49,24 +53,38 @@ class ShoppingRepository(
         return shoppingItemDao.getShoppingItemById(itemId)
     }
 
+    // ShoppingListDao の新しいソート済み取得メソッドをラップ。
     fun getAllShoppingListsSorted(): Flow<List<ShoppingList>> {
         return shoppingListDao.getAllShoppingListsOrderByOrderIndex()
     }
 
-    suspend fun createDefaultShoppingListIfNeeded(): Long {
+    // 初期リスト作成ロロジック。
+    suspend fun createDefaultShoppingListIfNeeded(): Long { // ★返り値をLongに統一★
         val existingLists = shoppingListDao.getAllShoppingListsOrderByOrderIndex().firstOrNull() // Flowを一度だけ収集
-        return (if (existingLists.isNullOrEmpty()) {
+        return if (existingLists.isNullOrEmpty()) {
             val defaultListName = "買い物メモ"
             val newOrderIndex = (shoppingListDao.getLastListOrderIndex() ?: -1) + 1
             val defaultList = ShoppingList(name = defaultListName, orderIndex = newOrderIndex)
-            shoppingListDao.insert(defaultList)
+            shoppingListDao.insert(defaultList) // この結果はLong
         } else {
-            existingLists.first().id // 既存の最初のリストのIDを返す
-        }) as Long
+            existingLists.first().id.toLong() // ★IntをLongに変換してから返す★
+        }
     }
 
+    // 連番リスト名生成ロジック。
     suspend fun generateNewShoppingListName(baseName: String = "買い物リスト"): String {
         val count = shoppingListDao.getListNameCount(baseName)
         return if (count == 0) baseName else "$baseName${count + 1}"
+    }
+
+    fun getAllShoppingListsOrderByOrderIndex(): Flow<List<ShoppingList>>{
+        return shoppingListDao.getAllShoppingListsOrderByOrderIndex()
+    }
+    suspend fun getLastListOrderIndex(): Int?{
+        return shoppingListDao.getLastListOrderIndex()
+    }
+
+    suspend fun getListNameCount(name: String): Int{
+        return shoppingListDao.getListNameCount(name = name)
     }
 }
