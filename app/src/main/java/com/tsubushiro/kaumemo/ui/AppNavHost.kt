@@ -12,7 +12,7 @@ import androidx.navigation.navArgument
 fun AppNavHost(
     navController: NavHostController = rememberNavController() // デフォルトで新しいNavControllerを作成
 ) {
-    NavHost(navController = navController, startDestination = "shopping_lists_route") {
+    NavHost(navController = navController, startDestination = "shopping_items_route/{listId}") {
         // 買い物リスト一覧画面
         composable("shopping_lists_route") {
             ShoppingListsScreen(navController = navController)

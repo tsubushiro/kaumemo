@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
@@ -67,13 +68,28 @@ fun ShoppingItemsScreen(
 //    val listName = "リストID: $listId" // 仮のリスト名
 
     Scaffold(
+//        topBar = {
+//            TopAppBar(
+////                title = { Text(listName) },
+//                title = { Text(shoppingListName) },
+//                navigationIcon = {
+//                    IconButton(onClick = { navController.popBackStack() }) {
+//                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "戻る")
+//                    }
+//                }
+//            )
+//        },
         topBar = {
             TopAppBar(
-//                title = { Text(listName) },
                 title = { Text(shoppingListName) },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { navController.popBackStack() }) { // 戻るボタン
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "戻る")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { navController.navigate("shopping_lists_route") }) { // ★追加★
+                        Icon(Icons.AutoMirrored.Filled.List, "リスト管理") // リスト管理画面へのアイコン
                     }
                 }
             )

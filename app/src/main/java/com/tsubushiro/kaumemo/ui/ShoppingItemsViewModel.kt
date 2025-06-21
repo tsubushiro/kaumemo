@@ -20,8 +20,12 @@ class ShoppingItemsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle // ナビゲーション引数を受け取るため
 ) : ViewModel() {
 
+    // ナビゲーション引数から渡されるlistId (初回起動時は利用されないが、タブ切り替えで使われる)
+//    private val navListId: Int? = savedStateHandle["listId"]
+
     // ナビゲーション引数からlistIdを取得
-    private val listId: Int = checkNotNull(savedStateHandle["listId"])
+//    private val listId: Int = checkNotNull(savedStateHandle["listId"])
+    private val listId = 1 // ToDo: デバッグ用
 
     // ★ ショッピングリスト名を公開するStateFlow ★
     val shoppingListName: StateFlow<String> =
