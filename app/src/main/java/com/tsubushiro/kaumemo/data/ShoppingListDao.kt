@@ -29,4 +29,15 @@ interface ShoppingListDao {
     @Query("SELECT * FROM shopping_lists WHERE id = :listId")
     fun getShoppingListById(listId: Int): Flow<ShoppingList?> // Flow<ShoppingList?> を返す
 
+    // 順に全てのリストを取得。
+    @Query("SELECT * FROM shopping_lists ORDER BY orderIndex ASC, createdAt DESC") // orderIndexを優先、次に作成日時でソート
+    fun getAllShoppingListsOrderByOrderIndex(): Flow<List<ShoppingList>>
+
+    // 新規リスト作成時に orderIndex を設定するため、既存リストの最大 orderIndex を取得
+    @Query("SELECT MAX(orderIndex) FROM shopping_lists")
+    suspend fun getLastListOrderIndex(): Int? // suspendにする (Flowではなく一度きりの取得のため)
+
+    // 連番リスト名生成のために、指定された名前で始まるリストの数をカウント。
+    @Query("SELECT COUNT(*) FROM shopping_lists WHERE name LIKE :name || '%'") // "買い物リスト%"のようなパターンにマッチ
+    suspend fun getListNameCount(name: String): Int // suspendにする
 }

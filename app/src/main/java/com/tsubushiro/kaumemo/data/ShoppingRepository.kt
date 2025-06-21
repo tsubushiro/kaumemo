@@ -1,6 +1,7 @@
 package com.tsubushiro.kaumemo.data
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
 
 class ShoppingRepository(
     private val shoppingListDao: ShoppingListDao,
@@ -46,5 +47,26 @@ class ShoppingRepository(
 
     suspend fun getShoppingItemById(itemId: Int): ShoppingItem? {
         return shoppingItemDao.getShoppingItemById(itemId)
+    }
+
+    fun getAllShoppingListsSorted(): Flow<List<ShoppingList>> {
+        return shoppingListDao.getAllShoppingListsOrderByOrderIndex()
+    }
+
+    suspend fun createDefaultShoppingListIfNeeded(): Long {
+        val existingLists = shoppingListDao.getAllShoppingListsOrderByOrderIndex().firstOrNull() // Flowを一度だけ収集
+        return (if (existingLists.isNullOrEmpty()) {
+            val defaultListName = "買い物メモ"
+            val newOrderIndex = (shoppingListDao.getLastListOrderIndex() ?: -1) + 1
+            val defaultList = ShoppingList(name = defaultListName, orderIndex = newOrderIndex)
+            shoppingListDao.insert(defaultList)
+        } else {
+            existingLists.first().id // 既存の最初のリストのIDを返す
+        }) as Long
+    }
+
+    suspend fun generateNewShoppingListName(baseName: String = "買い物リスト"): String {
+        val count = shoppingListDao.getListNameCount(baseName)
+        return if (count == 0) baseName else "$baseName${count + 1}"
     }
 }

@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 
 @Database(
     entities = [ShoppingList::class, ShoppingItem::class], // エンティティを登録
-    version = 1, // データベースバージョン
+    version = 2, // データベースバージョン ToDo: 本番1にもどす
     exportSchema = false // スキーマをファイルにエクスポートしない (今回は不要)
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -26,6 +26,7 @@ abstract class AppDatabase : RoomDatabase() {
                     "kaumemo_db" // データベースファイル名
                 )
                     // 開発中にエンティティを変更した際にDBを再構築する（本番アプリでは非推奨）
+                    // ToDo: 本番 fallbackToDestructiveMigration()は消す
                     .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
