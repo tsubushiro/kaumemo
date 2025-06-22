@@ -7,8 +7,6 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,15 +20,16 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -43,6 +42,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.graphicsLayer
@@ -56,7 +56,6 @@ import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorderAfterLongPress
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 import org.burnoutcrew.reorderable.reorderable
-
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class) // ExperimentalFoundationApi を追加
 @Composable
@@ -78,7 +77,9 @@ fun ShoppingListsScreen(
     val shoppingLists by viewModel.shoppingLists.collectAsState() // ViewModelからリストの状態を収集
     var showAddListDialog by remember { mutableStateOf(false) } // リスト追加ダイアログの表示状態
     var showEditListDialog by remember { mutableStateOf(false) } // リスト編集ダイアログの表示状態
+    var showConfirmDeleteDialog by remember { mutableStateOf(false) } // 削除確認ダイアログの状態
     var editingList by remember { mutableStateOf<ShoppingList?>(null) } // 編集中のリストを保持
+    var deletingList by remember { mutableStateOf<ShoppingList?>(null) } // 削除対象のリストを保持
 
     // ★Compose-Reorderableの状態を管理するState★
     val haptic = LocalHapticFeedback.current // 触覚フィードバック
@@ -137,44 +138,69 @@ fun ShoppingListsScreen(
                         val alpha = animateFloatAsState(if (isDragging) 0.5f else 1f, label = "alphaAnimation").value
                         val scale = animateFloatAsState(if (isDragging) 1.05f else 1f, label = "scaleAnimation").value
 
-                        Card(
+                        ShoppingListCard( // ★ShoppingListCard Composableを呼び出す★
+                            shoppingList = shoppingList,
+                            onListClick = {
+                                // タップで詳細画面へ遷移
+                                navController.navigate("shopping_items_route/${it.id}")
+                            },
+                            onEditClick = { listToEdit ->
+                                // 編集ダイアログ表示
+                                editingList = listToEdit
+                                showEditListDialog = true
+                            },
+                            onDeleteClick = { listToDelete ->
+                                // 削除確認ダイアログ表示
+                                deletingList = listToDelete
+                                showConfirmDeleteDialog = true
+                            },
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
                                 .graphicsLayer { // ドラッグ時の視覚効果
                                     scaleX = scale
                                     scaleY = scale
                                     this.alpha = alpha
                                 }
                                 .shadow(elevation, RoundedCornerShape(8.dp)) // マテリアルデザインの影
-                                .detectReorderAfterLongPress(state)
-                                .clickable { navController.navigate("shopping_items_route/${shoppingList.id}") }, // タップで詳細へ
-                            shape = RoundedCornerShape(8.dp),
-                  //          containerColor = MaterialTheme.colorScheme.surfaceVariant
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                            //    verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = shoppingList.name,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                // ★ドラッグハンドルアイコンを追加★
-                                Icon(
-                                    Icons.Filled.MoreVert ,
-                                    contentDescription = "ドラッグして並べ替え",
-                                    modifier = Modifier
-                                        .size(24.dp)
-                                    // detectReorderAfterLongPress をカード全体ではなくハンドルに適用する場合
-                                    // .detectReorderAfterLongPress(state)
-                                )
-                                }
-                        }
+                                .detectReorderAfterLongPress(state) // ★ドラッグ開始のジェスチャーをここに適用★
+                        )
+//                        Card(
+//                            modifier = Modifier
+//                                .fillMaxWidth()
+//                                .padding(horizontal = 8.dp, vertical = 4.dp)
+//                                .graphicsLayer { // ドラッグ時の視覚効果
+//                                    scaleX = scale
+//                                    scaleY = scale
+//                                    this.alpha = alpha
+//                                }
+//                                .shadow(elevation, RoundedCornerShape(8.dp)) // マテリアルデザインの影
+//                                .detectReorderAfterLongPress(state)
+//                                .clickable { navController.navigate("shopping_items_route/${shoppingList.id}") }, // タップで詳細へ
+//                            shape = RoundedCornerShape(8.dp),
+//                  //          containerColor = MaterialTheme.colorScheme.surfaceVariant
+//                        ) {
+//                            Row(
+//                                modifier = Modifier
+//                                    .fillMaxWidth()
+//                                    .padding(16.dp),
+//                                horizontalArrangement = Arrangement.SpaceBetween,
+//                            //    verticalAlignment = Alignment.CenterVertically
+//                            ) {
+//                                Text(
+//                                    text = shoppingList.name,
+//                                    style = MaterialTheme.typography.titleMedium,
+//                                    modifier = Modifier.weight(1f)
+//                                )
+//                                // ★ドラッグハンドルアイコンを追加★
+//                                Icon(
+//                                    Icons.Filled.MoreVert ,
+//                                    contentDescription = "ドラッグして並べ替え",
+//                                    modifier = Modifier
+//                                        .size(24.dp)
+//                                    // detectReorderAfterLongPress をカード全体ではなくハンドルに適用する場合
+//                                    // .detectReorderAfterLongPress(state)
+//                                )
+//                                }
+//                        }
                     }
                 }
             }
@@ -206,92 +232,88 @@ fun ShoppingListsScreen(
             }
         )
     }
+
+    // ★削除確認ダイアログ★ ※Itemと同じ
+    if (showConfirmDeleteDialog && deletingList != null) {
+        ConfirmDeleteDialog(
+            itemName = "${deletingList!!.name} を削除しますか？",
+            onConfirmDelete = {
+                viewModel.deleteShoppingList(deletingList!!) // ViewModelの削除メソッドを呼び出す
+                showConfirmDeleteDialog = false
+                deletingList = null
+            },
+            onDismiss = {
+                showConfirmDeleteDialog = false
+                deletingList = null
+            }
+        )
+    }
 }
 
 
-// 個々の買い物リスト表示用Composable
+// 個々の買い物リスト表示用Composable (大幅に修正)
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ShoppingListCard(
     shoppingList: ShoppingList,
-    onListClick: (ShoppingList) -> Unit, // リストがクリックされた時のコールバック
-    onEditClick: (ShoppingList) -> Unit, // 追加: 編集ボタンクリック時のコールバック
-    onDeleteClick: (ShoppingList) -> Unit, // 追加: 削除ボタンクリック時のコールバック
-    modifier: Modifier
+    onListClick: (ShoppingList) -> Unit, // リストがクリックされた時のコールバック (詳細画面遷移)
+    onEditClick: (ShoppingList) -> Unit, // 編集ボタンクリック時のコールバック
+    onDeleteClick: (ShoppingList) -> Unit, // 削除ボタンクリック時のコールバック
+    modifier: Modifier // 外側から渡される修飾子
 ) {
-    var showOptionsDialog by remember { mutableStateOf(false) } // ダイアログ表示状態
-
     Card(
-        modifier = modifier
+        modifier = modifier // 外側から渡されるModifierを適用
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .combinedClickable( // ★ 長押しとタップの両方を処理するため combinedClickable を使用 ★
-                onClick = { onListClick(shoppingList) },
-                onLongClick = { showOptionsDialog = true } // 長押しでオプションダイアログを表示
-            ),
-//            .clickable { onListClick(shoppingList) } // 通常のタップはアイテム画面へ遷移
-//            .longClickable { showOptionsDialog = true }, // 長押しでオプションダイアログ表示
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            .padding(vertical = 4.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        shape = RoundedCornerShape(8.dp) // CardDefaultsからコピー
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                // アイテム全体をタップ可能にするためのModifier。
+                // detectReorderAfterLongPressとは競合しないため、併用可能。
+                // IconButtonは自身のonClickを持つため、ここでのclickableはリスト名タップに有効
+                .clickable { onListClick(shoppingList) }
+                .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 8.dp), // 全体的なパディングを調整
+            verticalAlignment = Alignment.CenterVertically // 垂直方向中央揃え
         ) {
+            // 左側の編集ボタン
+            IconButton(
+                onClick = { onEditClick(shoppingList) },
+                modifier = Modifier.size(48.dp) // タップターゲットを大きくする
+            ) {
+                Icon(Icons.Default.Edit, contentDescription = "リストを編集")
+            }
+
+            // リスト名 (中央に配置し、残りのスペースを占める)
             Text(
                 text = shoppingList.name,
-                style = MaterialTheme.typography.headlineSmall
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier
+                    .weight(1f) // 残りのスペースを占める
+                    .padding(horizontal = 8.dp) // テキストとアイコンの間にパディング
             )
-            // TODO: 後でリスト内の未購入アイテム数などを表示可能
-        }
-    }
-    if (showOptionsDialog) {
-        AlertDialog(
-            onDismissRequest = { showOptionsDialog = false },
-            title = { Text(shoppingList.name) },
-            text = { Text("リストをどうしますか？") },
-            confirmButton = {
-                Column {
-                    Button(
-                        onClick = {
-                            onEditClick(shoppingList) // 編集コールバックを呼び出す
-                            showOptionsDialog = false // ダイアログを閉じる
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("編集")
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Button(
-                        onClick = {
-                            onDeleteClick(shoppingList) // 削除コールバックを呼び出す
-                            showOptionsDialog = false // ダイアログを閉じる
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error), // 削除ボタンは赤色に
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("削除")
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    // 削除ボタンとキャンセルが重なってしまうので、
-                    // 「キャンセル」ボタンも Column の中に入れて、すべてのボタンを縦並びにする
-                    // TextButtonからButtonコンポーザブルに変更
-                    Button( // TextButtonではなくButtonを使用
-                        onClick = { showOptionsDialog = false },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f), // 少し薄い色に
-                            contentColor = MaterialTheme.colorScheme.onSurface // テキスト色
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("キャンセル")
-                    }
-                }
-            },
-            dismissButton = {
-//                TextButton(onClick = { showOptionsDialog = false }) {
-//                    Text("キャンセル")
-//                }
+
+            // 右側の削除ボタン
+            IconButton(
+                onClick = { onDeleteClick(shoppingList) },
+                modifier = Modifier.size(48.dp) // タップターゲットを大きくする
+            ) {
+                Icon(Icons.Default.Delete, contentDescription = "リストを削除")
             }
-        )
+
+            // ドラッグハンドル (一番右に配置)
+            // このアイコンは視覚的なインジケーターとしてのみ機能し、
+            // detectReorderAfterLongPressはShoppingListCardのmodifierに適用済み
+//            Icon(
+//                Icons.Filled.MoreVert, // ドラッグ可能であることを示すアイコン
+//                contentDescription = "ドラッグして並べ替え",
+//                modifier = Modifier
+//                    .size(24.dp) // アイコン自体のサイズ
+//                    .padding(start = 4.dp) // 他のアイコンとの間隔
+//            )
+        }
     }
 }
 
@@ -375,3 +397,4 @@ fun EditListDialog(
         }
     )
 }
+
