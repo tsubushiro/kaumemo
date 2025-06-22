@@ -1,17 +1,28 @@
 package com.tsubushiro.kaumemo.ui
 
+
+//import androidx.compose.material.icons.filled.SwapVert
+import android.util.Log
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -33,13 +44,21 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.tsubushiro.kaumemo.data.ShoppingList
+import org.burnoutcrew.reorderable.ReorderableItem
+import org.burnoutcrew.reorderable.detectReorderAfterLongPress
+import org.burnoutcrew.reorderable.rememberReorderableLazyListState
+import org.burnoutcrew.reorderable.reorderable
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class) // ExperimentalFoundationApi を追加
 @Composable
 fun ShoppingListsScreen(
     navController: NavController, // 画面遷移のためのNavController
@@ -61,6 +80,21 @@ fun ShoppingListsScreen(
     var showEditListDialog by remember { mutableStateOf(false) } // リスト編集ダイアログの表示状態
     var editingList by remember { mutableStateOf<ShoppingList?>(null) } // 編集中のリストを保持
 
+    // ★Compose-Reorderableの状態を管理するState★
+    val haptic = LocalHapticFeedback.current // 触覚フィードバック
+    val state = rememberReorderableLazyListState(
+        onMove = { from, to ->
+            // ViewModelの並び替えメソッドを呼び出す
+            Log.d("ShoppingListScreen","よんだ？_onMove")
+            viewModel.onListReordered(from.index, to.index)
+        },
+        onDragEnd = { start, end ->
+            // ドラッグ終了時に触覚フィードバック
+            Log.d("ShoppingListScreen","よんだ？_onDragEnd")
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        }
+    )
+
     Scaffold(
         topBar = {
             TopAppBar(title = { Text("買い物リスト") })
@@ -80,10 +114,11 @@ fun ShoppingListsScreen(
         }
     ) { paddingValues ->
         LazyColumn(
+            state = state.listState, // ReorderableLazyListStateからLazyListStateを取得
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .reorderable(state) // reorderable修飾子を適
         ) {
             if (shoppingLists.isEmpty()) {
                 item {
@@ -96,29 +131,55 @@ fun ShoppingListsScreen(
                     )
                 }
             } else {
-                items(shoppingLists) { shoppingList ->
-                    ShoppingListCard(
-                        shoppingList = shoppingList,
-                        onListClick = {
-                            // リストをタップしたら、そのリストのアイテム画面へ遷移
-                            navController.navigate("shopping_items_route/${shoppingList.id}")
-                        },
-                        // ★ ここから編集・削除のコールバック ★
-                        onEditClick = { listToEdit -> // 編集ボタンが押されたら
-                            editingList = listToEdit      // 編集対象のリストをセット
-                            showEditListDialog = true     // 編集ダイアログを表示
-                        },
-                        onDeleteClick = { listToDelete -> // 削除ボタンが押されたら
-                            viewModel.deleteShoppingList(listToDelete) // ViewModelの削除メソッドを呼び出し
+                itemsIndexed(shoppingLists, key = { _, item -> item.id }) { index, shoppingList ->
+                    ReorderableItem(state, key = shoppingList.id) { isDragging ->
+                        val elevation = animateDpAsState(if (isDragging) 16.dp else 0.dp, label = "elevationAnimation").value
+                        val alpha = animateFloatAsState(if (isDragging) 0.5f else 1f, label = "alphaAnimation").value
+                        val scale = animateFloatAsState(if (isDragging) 1.05f else 1f, label = "scaleAnimation").value
+
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                                .graphicsLayer { // ドラッグ時の視覚効果
+                                    scaleX = scale
+                                    scaleY = scale
+                                    this.alpha = alpha
+                                }
+                                .shadow(elevation, RoundedCornerShape(8.dp)) // マテリアルデザインの影
+                                .detectReorderAfterLongPress(state)
+                                .clickable { navController.navigate("shopping_items_route/${shoppingList.id}") }, // タップで詳細へ
+                            shape = RoundedCornerShape(8.dp),
+                  //          containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                            //    verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = shoppingList.name,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                // ★ドラッグハンドルアイコンを追加★
+                                Icon(
+                                    Icons.Filled.MoreVert ,
+                                    contentDescription = "ドラッグして並べ替え",
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                    // detectReorderAfterLongPress をカード全体ではなくハンドルに適用する場合
+                                    // .detectReorderAfterLongPress(state)
+                                )
+                                }
                         }
-                    )
+                    }
                 }
             }
-
-
         }
     }
-
     // リスト追加ダイアログ
     if (showAddListDialog) {
         AddListDialog(
@@ -147,6 +208,7 @@ fun ShoppingListsScreen(
     }
 }
 
+
 // 個々の買い物リスト表示用Composable
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -154,30 +216,13 @@ fun ShoppingListCard(
     shoppingList: ShoppingList,
     onListClick: (ShoppingList) -> Unit, // リストがクリックされた時のコールバック
     onEditClick: (ShoppingList) -> Unit, // 追加: 編集ボタンクリック時のコールバック
-    onDeleteClick: (ShoppingList) -> Unit // 追加: 削除ボタンクリック時のコールバック
-
+    onDeleteClick: (ShoppingList) -> Unit, // 追加: 削除ボタンクリック時のコールバック
+    modifier: Modifier
 ) {
-//    Card(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .padding(vertical = 4.dp)
-//            .clickable { onListClick(shoppingList) }, // クリック可能にする
-//        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-//    ) {
-//        Column(
-//            modifier = Modifier.padding(16.dp)
-//        ) {
-//            Text(
-//                text = shoppingList.name,
-//                style = MaterialTheme.typography.headlineSmall
-//            )
-//            // ここに、リスト内のアイテム数など表示を後で追加可能
-//        }
-//    }
     var showOptionsDialog by remember { mutableStateOf(false) } // ダイアログ表示状態
 
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .combinedClickable( // ★ 長押しとタップの両方を処理するため combinedClickable を使用 ★

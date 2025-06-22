@@ -64,6 +64,7 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.56.2") // 最新のHiltバージョンに合わせる
     ksp("com.google.dagger:hilt-compiler:2.56.2") // kapt または ksp を使用
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+    implementation("org.burnoutcrew.composereorderable:reorderable:0.9.6") // ドラッグアンドドロップ
     //
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
