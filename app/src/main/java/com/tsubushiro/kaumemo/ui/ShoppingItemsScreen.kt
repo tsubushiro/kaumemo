@@ -3,10 +3,12 @@ package com.tsubushiro.kaumemo.ui
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -96,6 +98,14 @@ fun ShoppingItemsScreen(
         floatingActionButton = {
             FloatingActionButton(onClick = { showAddItemDialog = true }) {
                 Icon(Icons.Filled.Add, "新しいアイテムを追加")
+            }
+        },
+        // ★ ここにbottomBarを追加し、広告Composableを配置 ★
+        bottomBar = {
+            // Spacerなどを使い、広告の下にパディングを入れると見栄えが良くなる
+            Column {
+                AdViewComposable(modifier = Modifier.fillMaxWidth())
+                Spacer(modifier = Modifier.height(16.dp)) // 広告の下に余白
             }
         }
     ) { paddingValues ->
