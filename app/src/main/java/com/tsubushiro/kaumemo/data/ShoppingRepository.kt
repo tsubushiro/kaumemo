@@ -87,4 +87,10 @@ class ShoppingRepository(
     suspend fun getListNameCount(name: String): Int{
         return shoppingListDao.getListNameCount(name = name)
     }
+
+    suspend fun updateShoppingListOrder(lists: List<ShoppingList>) {
+        lists.forEach { list ->
+            shoppingListDao.update(list)
+        }
+    }
 }

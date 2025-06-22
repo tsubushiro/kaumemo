@@ -19,12 +19,34 @@ class ShoppingListsViewModel @Inject constructor( // @Injectでリポジトリ�
 
     // 全ての買い物リストをFlowとして公開し、UIが監視できるようにする
     val shoppingLists: StateFlow<List<ShoppingList>> =
-        repository.getAllShoppingLists()
+//        repository.getAllShoppingLists()
+        repository.getAllShoppingListsSorted() // ★変更★
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5000), // UIが表示されている間購読を続ける
                 initialValue = emptyList() // 初期値は空のリスト
             )
+
+    // ★追加: リストの並び替えロジック★
+    fun onListReordered(fromIndex: Int, toIndex: Int) {
+        val currentList = shoppingLists.value.toMutableList()
+        if (fromIndex < 0 || fromIndex >= currentList.size ||
+            toIndex < 0 || toIndex >= currentList.size) {
+            return // 無効なインデックス
+        }
+
+        val movedItem = currentList.removeAt(fromIndex)
+        currentList.add(toIndex, movedItem)
+
+        // 新しい orderIndex を割り当て
+        val updatedLists = currentList.mapIndexed { index, list ->
+            list.copy(orderIndex = index)
+        }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.updateShoppingListOrder(updatedLists) // リポジトリを通じて永続化
+        }
+    }
 
     /**
      * 新しい買い物リストを追加する
