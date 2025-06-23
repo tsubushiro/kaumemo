@@ -3,11 +3,15 @@ package com.tsubushiro.kaumemo.data
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.time.Instant
+import androidx.room.Index // このインポートを追加
 
-@Entity(tableName = "shopping_lists")
+@Entity(
+    tableName = "shopping_lists",
+    indices = [Index(value = ["orderIndex"])] // ★この行を追加★
+)
 data class ShoppingList(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val name: String,
-    val createdAt: Long = Instant.now().toEpochMilli(), // 作成日時 (Unixタイムスタンプ)
-    val orderIndex: Int = 0 // ★追加★
+    val createdAt: Long = Instant.now().toEpochMilli(),
+    val orderIndex: Int = 0
 )
