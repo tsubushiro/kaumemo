@@ -17,15 +17,16 @@ import androidx.navigation.navArgument
 fun AppNavHost(
     navController: NavHostController = rememberNavController() // デフォルトで新しいNavControllerを作成
 ) {
-    Log.d("AppNavHost","よんだ？")
+//    Log.d("AppNavHost","よんだ？")
     val shoppingItemsViewModel: ShoppingItemsViewModel = viewModel() // Hiltの場合は hiltViewModel()
     //   val initialListId by shoppingItemsViewModel.currentListId.collectAsStateWithLifecycle() // ViewModelからIDを収集
     val initialListIdState = shoppingItemsViewModel.currentListId.collectAsStateWithLifecycle()
     val initialListId = initialListIdState.value // Stateオブジェクトから値を取得
-    Log.d("AppNavHost",initialListId.toString())
+//    Log.d("AppNavHost",initialListId.toString())
 
     // initialListId が確定するまでNavHostを構築しないか、初期値を考慮
     if (initialListId != null) {
+        Log.d("PerfLog", "AppNavHost NavHost construction Start: ${System.currentTimeMillis()}")
         //        NavHost(navController = navController, startDestination = "shopping_items_route/{${initialListId}}") { // ダミーのスタートデスティネーション
         NavHost(navController = navController, startDestination = "shopping_items_route/{listId}") { // ダミーのスタートデスティネーション
             composable("shopping_lists_route") {
@@ -42,6 +43,7 @@ fun AppNavHost(
             }
             // ... 他のルート
         }
+        Log.d("PerfLog", "AppNavHost NavHost construction End: ${System.currentTimeMillis()}")
     } else {
         // ローディング表示など
         CircularProgressIndicator()

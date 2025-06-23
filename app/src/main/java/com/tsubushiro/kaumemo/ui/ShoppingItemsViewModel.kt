@@ -39,8 +39,9 @@ class ShoppingItemsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            Log.d("PerfLog", "ViewModel init block Start: ${System.currentTimeMillis()}")
             // アプリ起動時にデフォルトリストを作成/最初のリストを決定
-            try{
+//            try{
                 // repository.createDefaultShoppingListIfNeeded() は Long を返すようになった
                 // そのため、結果を Int に変換して _currentListId.value にセット
                 val resolvedListIdLong: Long = navListId?.toLong() // navListIdがInt?なのでLong?に変換
@@ -48,10 +49,10 @@ class ShoppingItemsViewModel @Inject constructor(
 
                 // Long を Int に安全に変換してセット
                 _currentListId.value = resolvedListIdLong.coerceIn(Int.MIN_VALUE.toLong(), Int.MAX_VALUE.toLong()).toInt()
-            }catch(e: Exception){
-                Log.d("ShopppingItemViewModel","よんだ？"+e.toString())
-            }
-
+//            }catch(e: Exception){
+//                Log.d("ShopppingItemViewModel","よんだ？"+e.toString())
+//            }
+            Log.d("PerfLog", "ViewModel init block End: ${System.currentTimeMillis()}")
 
             // currentListId の変更を監視し、allShoppingLists のデータが揃ったら初期リストが選択されるようにする
             // allShoppingLists.collect { lists ->

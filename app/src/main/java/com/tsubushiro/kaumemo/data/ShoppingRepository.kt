@@ -1,5 +1,6 @@
 package com.tsubushiro.kaumemo.data
 
+import android.util.Log
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 
@@ -60,14 +61,32 @@ class ShoppingRepository(
 
     // 初期リスト作成ロロジック。
     suspend fun createDefaultShoppingListIfNeeded(): Long { // ★返り値をLongに統一★
+        Log.d("PerfLog", "createDefaultShoppingListIfNeeded Start: ${System.currentTimeMillis()}")
+        Log.d("PerfLog", "getAllShoppingListsOrderByOrderIndex Start: ${System.currentTimeMillis()}")
         val existingLists = shoppingListDao.getAllShoppingListsOrderByOrderIndex().firstOrNull() // Flowを一度だけ収集
+        Log.d("PerfLog", "getAllShoppingListsOrderByOrderIndex End: ${System.currentTimeMillis()}")
+        // ToDo:パフォーマンス問題用 元に戻す
+//        return if (existingLists.isNullOrEmpty()) {
+//            val defaultListName = "買い物メモ"
+//            val newOrderIndex = (shoppingListDao.getLastListOrderIndex() ?: -1) + 1
+//            val defaultList = ShoppingList(name = defaultListName, orderIndex = newOrderIndex)
+//            shoppingListDao.insert(defaultList) // この結果はLong
+//        } else {
+//            existingLists.first().id.toLong() // ★IntをLongに変換してから返す★
+//        }
         return if (existingLists.isNullOrEmpty()) {
             val defaultListName = "買い物メモ"
             val newOrderIndex = (shoppingListDao.getLastListOrderIndex() ?: -1) + 1
             val defaultList = ShoppingList(name = defaultListName, orderIndex = newOrderIndex)
-            shoppingListDao.insert(defaultList) // この結果はLong
+            Log.d("PerfLog", "insert defaultList Start: ${System.currentTimeMillis()}")
+            val id = shoppingListDao.insert(defaultList)
+            Log.d("PerfLog", "insert defaultList End: ${System.currentTimeMillis()}")
+            Log.d("PerfLog", "createDefaultShoppingListIfNeeded End (new): ${System.currentTimeMillis()}")
+            id
         } else {
-            existingLists.first().id.toLong() // ★IntをLongに変換してから返す★
+            val id = existingLists.first().id.toLong()
+            Log.d("PerfLog", "createDefaultShoppingListIfNeeded End (existing): ${System.currentTimeMillis()}")
+            id
         }
     }
 
