@@ -1,11 +1,15 @@
 package com.tsubushiro.kaumemo.ui
 
 import android.util.Log
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -17,18 +21,48 @@ import androidx.navigation.navArgument
 fun AppNavHost(
     navController: NavHostController = rememberNavController() // デフォルトで新しいNavControllerを作成
 ) {
-//    Log.d("AppNavHost","よんだ？")
-    val shoppingItemsViewModel: ShoppingItemsViewModel = viewModel() // Hiltの場合は hiltViewModel()
-    //   val initialListId by shoppingItemsViewModel.currentListId.collectAsStateWithLifecycle() // ViewModelからIDを収集
+    // ViewModelはここで一度だけ取得する（Activityスコープ）
+    // Hiltが適切にViewModelを管理してくれるはず
+    val shoppingItemsViewModel: ShoppingItemsViewModel = hiltViewModel()
+
     val initialListIdState = shoppingItemsViewModel.currentListId.collectAsStateWithLifecycle()
     val initialListId = initialListIdState.value // Stateオブジェクトから値を取得
 //    Log.d("AppNavHost",initialListId.toString())
 
-    // initialListId が確定するまでNavHostを構築しないか、初期値を考慮
-    if (initialListId != null) {
+    // LaunchedEffectを使って、initialListIdが確定したときに一度だけ初期画面に遷移
+    LaunchedEffect(initialListId) {
+        if (initialListId != null) {
+            val route = "shopping_items_route/$initialListId"
+            // 現在のルートが既に正しい場合は遷移しないようにする
+            // ※これがないと、ナビゲーション引数が変わるたびに再遷移ループになる可能性あり
+            if (navController.currentDestination?.route != "shopping_items_route/{listId}") {
+                Log.d("PerfLog", "Navigating to initial route: $route at ${System.currentTimeMillis()}")
+                navController.navigate(route) {
+                    // アプリ起動時に常にこの画面になるようにバックスタックをクリア
+                    popUpTo(navController.graph.startDestinationId) {
+                        inclusive = true
+                    }
+                    launchSingleTop = true // 同じルートが複数起動しないようにする
+                }
+            }
+        }
+    }
+
+    // initialListId がまだ確定していない場合はローディング表示
+    // NavHost の前にローディング画面を出す
+    if (initialListId == null) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+    } else {
+        // NavHost は初期ルートを静的に定義する
+        // 初回起動時の遷移はLaunchedEffectで行うため、startDestinationは「初期画面に到達するためのルート」を指定
         Log.d("PerfLog", "AppNavHost NavHost construction Start: ${System.currentTimeMillis()}")
-        //        NavHost(navController = navController, startDestination = "shopping_items_route/{${initialListId}}") { // ダミーのスタートデスティネーション
-        NavHost(navController = navController, startDestination = "shopping_items_route/{listId}") { // ダミーのスタートデスティネーション
+        NavHost(navController = navController, startDestination = "shopping_lists_route") { // ★ startDestination を固定する ★
+
             composable("shopping_lists_route") {
                 ShoppingListsScreen(navController = navController)
             }
@@ -38,49 +72,13 @@ fun AppNavHost(
                 arguments = listOf(navArgument("listId") { type = NavType.IntType })
             ) { backStackEntry ->
                 val listId = backStackEntry.arguments?.getInt("listId")
-                // ここで listId をViewModelに渡す必要は、hiltViewModel() が SavedStateHandle を通じて自動で行うため不要
-                ShoppingItemsScreen(navController = navController, listId = listId) // ViewModelを共有
+                // ShoppingItemsScreen には listId を渡すだけで、ViewModelはScreen内で取得させる
+                // hiltViewModel() は SavedStateHandle を通じて自動で listId を ViewModel に渡すため、
+                // ここで listId を直接 ViewModel に渡す必要はない（ViewModelのコンストラクタで @AssistedFactory などを使わない限り）
+                ShoppingItemsScreen(navController = navController, listId = listId)
             }
-            // ... 他のルート
+            // 他のルートもここに追加
         }
         Log.d("PerfLog", "AppNavHost NavHost construction End: ${System.currentTimeMillis()}")
-    } else {
-        // ローディング表示など
-        CircularProgressIndicator()
     }
-
-    // 初回起動時のナビゲーションロジック (NavHostの外)
-    LaunchedEffect(initialListId) {
-        if (initialListId != null && navController.currentDestination?.route != "shopping_items_route/{listId}") {
-            // 同じルートに何度もnavigateしないようにチェック
-            navController.navigate("shopping_items_route/$initialListId") {
-                // アプリ起動時に常にこの画面になるようにバックスタックをクリア
-                popUpTo(navController.graph.startDestinationId) {
-                    inclusive = true
-                }
-            }
-        }
-    }
-//    NavHost(navController = navController, startDestination = "shopping_items_route/{listId}") {
-//        // 買い物リスト一覧画面
-//        composable("shopping_lists_route") {
-//            ShoppingListsScreen(navController = navController)
-//        }
-//
-//        // 個別買い物アイテム詳細画面
-//        composable(
-//            "shopping_items_route/{listId}", // listIdを引数として受け取る
-//            arguments = listOf(navArgument("listId") { type = NavType.IntType })
-//        ) { backStackEntry ->
-//            val listId = backStackEntry.arguments?.getInt("listId")
-//            if (listId != null) {
-//                ShoppingItemsScreen(navController = navController, listId = listId)
-//            } else {
-//                // listIdがnullの場合のエラーハンドリング（例えば、エラー画面に遷移させるなど）
-//                // 現状はLogcatで警告を出す程度で良い
-//            }
-//        }
-//        // ★ その他の画面ルートがあればここに追加 ★
-//        // 例: composable("settings_route") { SettingsScreen(...) }
-//    }
 }
