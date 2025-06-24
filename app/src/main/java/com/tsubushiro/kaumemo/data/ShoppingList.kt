@@ -1,9 +1,9 @@
 package com.tsubushiro.kaumemo.data
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import java.time.Instant
-import androidx.room.Index // このインポートを追加
 
 @Entity(
     tableName = "shopping_lists",
