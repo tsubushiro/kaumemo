@@ -11,7 +11,7 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.tsubushiro.kaumemo"
+        applicationId = "com.tsubushiro.kaumemo" // Todo:リリース時
         minSdk = 26
         targetSdk = 35
         versionCode = 1
