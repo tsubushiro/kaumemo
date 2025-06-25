@@ -14,5 +14,6 @@
 .cxx
 local.properties
 /traces
+/release
 *.bk
 *.back
