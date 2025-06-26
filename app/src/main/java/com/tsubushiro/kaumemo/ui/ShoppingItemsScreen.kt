@@ -44,7 +44,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.tsubushiro.kaumemo.data.ShoppingItem
 
@@ -53,7 +52,7 @@ import com.tsubushiro.kaumemo.data.ShoppingItem
 fun ShoppingItemsScreen(
     navController: NavController,
     listId: Int?, // ナビゲーション引数としてリストIDを受け取る
-    viewModel: ShoppingItemsViewModel = hiltViewModel()
+    viewModel: ShoppingItemsViewModel // = hiltViewModel()
 ) {
     // ★ ViewModelからリスト名を収集 ★
     val shoppingListName by viewModel.shoppingListName.collectAsState()

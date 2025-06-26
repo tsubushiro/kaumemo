@@ -5,7 +5,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -16,9 +15,12 @@ import androidx.navigation.navArgument
 @Composable
 fun AppNavHost(
     navController: NavHostController = rememberNavController() // デフォルトで新しいNavControllerを作成
+    ,
+    // ★ ViewModelを引数として受け取るように変更 ★
+    shoppingItemsViewModel: ShoppingItemsViewModel // ここに引数を追加
 ) {
 //    Log.d("AppNavHost","よんだ？")
-    val shoppingItemsViewModel: ShoppingItemsViewModel = viewModel() // Hiltの場合は hiltViewModel()
+//    val shoppingItemsViewModel: ShoppingItemsViewModel = viewModel() // Hiltの場合は hiltViewModel()
     //   val initialListId by shoppingItemsViewModel.currentListId.collectAsStateWithLifecycle() // ViewModelからIDを収集
     val initialListIdState = shoppingItemsViewModel.currentListId.collectAsStateWithLifecycle()
     val initialListId = initialListIdState.value // Stateオブジェクトから値を取得
@@ -39,7 +41,8 @@ fun AppNavHost(
             ) { backStackEntry ->
                 val listId = backStackEntry.arguments?.getInt("listId")
                 // ここで listId をViewModelに渡す必要は、hiltViewModel() が SavedStateHandle を通じて自動で行うため不要
-                ShoppingItemsScreen(navController = navController, listId = listId) // ViewModelを共有
+//                ShoppingItemsScreen(navController = navController, listId = listId) // ViewModelを共有
+                ShoppingItemsScreen(navController = navController, listId = listId, viewModel = shoppingItemsViewModel)
             }
             // ... 他のルート
         }

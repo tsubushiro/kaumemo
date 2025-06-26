@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -13,11 +14,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.google.android.gms.ads.MobileAds
 import com.tsubushiro.kaumemo.ui.AppNavHost
+import com.tsubushiro.kaumemo.ui.ShoppingItemsViewModel
 import com.tsubushiro.kaumemo.ui.theme.KaumemoTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint // ここにHiltのエントリーポイントアノテーションを追加
 class MainActivity : ComponentActivity() {
+    // ★ ここにViewModelをActivityスコープで取得する行を追加 ★
+    private val shoppingItemsViewModel: ShoppingItemsViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d("PerfLog", "MainActivity onCreate Start: ${System.currentTimeMillis()}")
@@ -31,8 +36,9 @@ class MainActivity : ComponentActivity() {
                     MobileAds.initialize(this) {}
 
                     // ★ AppNavHost を呼び出す ★
-                    AppNavHost()
-
+//                    AppNavHost()
+// ★ AppNavHost の呼び出し時にViewModelを引数として渡す ★
+                    AppNavHost(shoppingItemsViewModel = shoppingItemsViewModel)
 //                    // ナビゲーションコントローラーを作成
 //                    val navController = rememberNavController()
 //
