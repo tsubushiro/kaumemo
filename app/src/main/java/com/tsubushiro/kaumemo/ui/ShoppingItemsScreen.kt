@@ -31,9 +31,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -52,17 +55,26 @@ import com.tsubushiro.kaumemo.data.ShoppingItem
 fun ShoppingItemsScreen(
     navController: NavController,
     listId: Int?, // ナビゲーション引数としてリストIDを受け取る
-    viewModel: ShoppingItemsViewModel // = hiltViewModel()
+    shoppingItemsViewModel: ShoppingItemsViewModel // = hiltViewModel()
 ) {
     // ★ ViewModelからリスト名を収集 ★
-    val shoppingListName by viewModel.shoppingListName.collectAsState()
+    val shoppingListName by shoppingItemsViewModel.shoppingListName.collectAsState()
 
-    val shoppingItems by viewModel.shoppingItems.collectAsState() // ViewModelからアイテムの状態を収集
+    val shoppingItems by shoppingItemsViewModel.shoppingItems.collectAsState() // ViewModelからアイテムの状態を収集
     var showAddItemDialog by remember { mutableStateOf(false) } // アイテム追加ダイアログ表示状態
     var showEditItemDialog by remember { mutableStateOf(false) } // アイテム編集ダイアログ表示状態
     var editingItem by remember { mutableStateOf<ShoppingItem?>(null) } // 編集中のアイテム
     var showConfirmDeleteDialog by remember { mutableStateOf(false) } // 削除確認ダイアログの表示状態
     var itemToDelete by remember { mutableStateOf<ShoppingItem?>(null) } // 削除対象のアイテム
+
+
+    val allShoppingLists by shoppingItemsViewModel.allShoppingLists.collectAsState() // ★追加★
+    val currentListId by shoppingItemsViewModel.currentListId.collectAsState() // ★追加★
+
+    // 現在選択されているタブのインデックスを見つける
+    val selectedTabIndex = remember(currentListId, allShoppingLists) {
+        allShoppingLists.indexOfFirst { it.id == currentListId }
+    }
 
     // 今回は簡易的に「リストID: $listId」をタイトルにする
 //    val listName = "リストID: $listId" // 仮のリスト名
@@ -80,19 +92,77 @@ fun ShoppingItemsScreen(
 //            )
 //        },
         topBar = {
-            TopAppBar(
-                title = { Text(shoppingListName) },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) { // 戻るボタン
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "戻る")
+            Column { // TopAppBarとTabRowをまとめるためにColumnを追加
+//                TopAppBar(
+//                    title = { Text(shoppingListName) },
+//                    navigationIcon = {
+//                        IconButton(onClick = { navController.popBackStack() }) { // 戻るボタン
+//                            Icon(Icons.AutoMirrored.Filled.ArrowBack, "戻る")
+//                        }
+//                    },
+//                    actions = {
+//                        IconButton(onClick = { navController.navigate("shopping_lists_route") }) { // ★追加★
+//                            Icon(Icons.AutoMirrored.Filled.List, "リスト管理") // リスト管理画面へのアイコン
+//                        }
+//                    }
+//                )
+                TopAppBar(
+                    title = { Text(shoppingListName ?: "読み込み中...") },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        titleContentColor = MaterialTheme.colorScheme.onPrimary
+                    ),
+                    navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "戻る",
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { shoppingItemsViewModel.createNewListAndSwitchToIt() }) {
+                            Icon(
+                                Icons.Filled.Add,
+                                contentDescription = "新しいリストを作成",
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
+//                        IconButton(onClick = { showConfirmDeleteListDialog = true }) {
+//                            Icon(
+//                                Icons.Filled.Delete,
+//                                contentDescription = "現在のリストを削除",
+//                                tint = MaterialTheme.colorScheme.onPrimary
+//                            )
+//                        }
+                        IconButton(onClick = { navController.navigate("shopping_lists_route") }) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.List,
+                                contentDescription = "リスト一覧",
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
                     }
-                },
-                actions = {
-                    IconButton(onClick = { navController.navigate("shopping_lists_route") }) { // ★追加★
-                        Icon(Icons.AutoMirrored.Filled.List, "リスト管理") // リスト管理画面へのアイコン
+                )
+
+                // ★追加: タブバー（リスト切り替え用）
+                if (allShoppingLists.isNotEmpty()) { // リストが一つも無い場合はタブを表示しない
+                    ScrollableTabRow(
+                        selectedTabIndex = selectedTabIndex.coerceAtLeast(0), // インデックスが-1にならないように
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    ) {
+                        allShoppingLists.forEachIndexed { index, shoppingList ->
+                            Tab(
+                                selected = selectedTabIndex == index,
+                                onClick = { shoppingItemsViewModel.updateCurrentListId(shoppingList.id) }, // タブクリックでリストを切り替え
+                                text = { Text(shoppingList.name) }
+                            )
+                        }
                     }
                 }
-            )
+            }
         },
         floatingActionButton = {
             FloatingActionButton(onClick = { showAddItemDialog = true }) {
@@ -128,7 +198,7 @@ fun ShoppingItemsScreen(
                 items(shoppingItems) { item ->
                     ShoppingItemCard(
                         shoppingItem = item,
-                        onTogglePurchased = { viewModel.toggleItemPurchased(it) },
+                        onTogglePurchased = { shoppingItemsViewModel.toggleItemPurchased(it) },
                         onEditClick = { itemToEdit ->
                             editingItem = itemToEdit
                             showEditItemDialog = true
@@ -139,7 +209,7 @@ fun ShoppingItemsScreen(
                             showConfirmDeleteDialog = true
                         }
 //                        onDeleteClick = { itemToDelete ->
-//                            viewModel.deleteShoppingItem(itemToDelete)
+//                            shoppingItemsViewModel.deleteShoppingItem(itemToDelete)
 //                        }
                     )
                 }
@@ -151,7 +221,7 @@ fun ShoppingItemsScreen(
     if (showAddItemDialog) {
         AddItemDialog(
             onAddItem = { itemName ->
-                viewModel.addShoppingItem(itemName)
+                shoppingItemsViewModel.addShoppingItem(itemName)
                 showAddItemDialog = false
             },
             onDismiss = { showAddItemDialog = false }
@@ -163,7 +233,7 @@ fun ShoppingItemsScreen(
         EditItemDialog(
             shoppingItem = editingItem!!,
             onEditItem = { updatedItem ->
-                viewModel.updateShoppingItem(updatedItem)
+                shoppingItemsViewModel.updateShoppingItem(updatedItem)
                 showEditItemDialog = false
                 editingItem = null
             },
@@ -179,7 +249,7 @@ fun ShoppingItemsScreen(
         ConfirmDeleteDialog(
             itemName = itemToDelete!!.name,
             onConfirmDelete = {
-                viewModel.deleteShoppingItem(itemToDelete!!) // 削除実行
+                shoppingItemsViewModel.deleteShoppingItem(itemToDelete!!) // 削除実行
                 showConfirmDeleteDialog = false
                 itemToDelete = null
             },

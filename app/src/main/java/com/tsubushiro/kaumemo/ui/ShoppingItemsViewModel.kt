@@ -9,6 +9,7 @@ import com.tsubushiro.kaumemo.data.ShoppingList
 import com.tsubushiro.kaumemo.data.ShoppingRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -148,13 +149,44 @@ class ShoppingItemsViewModel @Inject constructor(
         }
     }
 
+    val allShoppingLists: StateFlow<List<ShoppingList>> =
+        repository.getAllShoppingListsSorted() // ★改めて確認★
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = emptyList()
+            )
+
+    // onTabSelected はフェーズ1.4で既に実装済み
+    fun onTabSelected(listId: Int) {
+        _currentListId.value = listId
+    }
+
     fun createNewListAndSwitchToIt() {
+        Log.d("Debug","よんだ？")
         viewModelScope.launch(Dispatchers.IO) {
-            val newListName = repository.generateNewShoppingListName()
-            val newOrderIndex = (repository.getLastListOrderIndex() ?: -1) + 1
-            val newList = ShoppingList(name = newListName, orderIndex = newOrderIndex)
-            val newId  = repository.insertShoppingList(newList)
-            _currentListId.value = newId.toInt() // 新しいリストに切り替える
+            try {
+                val newListName = repository.generateNewShoppingListName()
+                // 最新のallShoppingListsから最大orderIndexを取得
+                val newOrderIndex = (allShoppingLists.value.maxOfOrNull { it.orderIndex } ?: -1) + 1
+                val newList = ShoppingList(name = newListName, orderIndex = newOrderIndex)
+                val newListId = repository.insertShoppingList(newList)
+                    .toInt() // insertShoppingListはLongを返すのでIntに変換
+                Log.d("Debug","newListid : ${newListId.toString()}")
+                delay(1000)
+                _currentListId.value = newListId // 新しいリストに切り替える
+            }catch(e: Exception){
+                Log.d("Debug",e.message.toString())
+            }
         }
+    }
+
+    /**
+     * 現在の買い物リストを更新する
+     * @param listId 更新するリストのID
+     */
+    fun updateCurrentListId(listId: Int) {
+        _currentListId.value = listId
+        Log.d("ShoppingItemsViewModel", "Current List ID updated to: $listId")
     }
 }

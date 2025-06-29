@@ -42,7 +42,7 @@ fun AppNavHost(
                 val listId = backStackEntry.arguments?.getInt("listId")
                 // ここで listId をViewModelに渡す必要は、hiltViewModel() が SavedStateHandle を通じて自動で行うため不要
 //                ShoppingItemsScreen(navController = navController, listId = listId) // ViewModelを共有
-                ShoppingItemsScreen(navController = navController, listId = listId, viewModel = shoppingItemsViewModel)
+                ShoppingItemsScreen(navController = navController, listId = listId, shoppingItemsViewModel = shoppingItemsViewModel)
             }
             // ... 他のルート
         }
