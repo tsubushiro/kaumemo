@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
@@ -126,15 +125,15 @@ fun ShoppingItemsScreen(
                         containerColor = MaterialTheme.colorScheme.primary,
                         titleContentColor = MaterialTheme.colorScheme.onPrimary
                     ),
-                    navigationIcon = {
-                        IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "戻る",
-                                tint = MaterialTheme.colorScheme.onPrimary
-                            )
-                        }
-                    },
+//                    navigationIcon = {
+//                        IconButton(onClick = { navController.popBackStack() }) {
+//                            Icon(
+//                                Icons.AutoMirrored.Filled.ArrowBack,
+//                                contentDescription = "戻る",
+//                                tint = MaterialTheme.colorScheme.onPrimary
+//                            )
+//                        }
+//                    },
                     actions = {
                         IconButton(onClick = { shoppingItemsViewModel.createNewListAndSwitchToIt() }) {
                             Icon(
