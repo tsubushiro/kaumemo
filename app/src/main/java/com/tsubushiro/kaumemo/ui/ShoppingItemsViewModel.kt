@@ -9,7 +9,6 @@ import com.tsubushiro.kaumemo.data.ShoppingList
 import com.tsubushiro.kaumemo.data.ShoppingRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -165,21 +164,31 @@ class ShoppingItemsViewModel @Inject constructor(
     fun createNewListAndSwitchToIt() {
         Log.d("Debug","よんだ？")
         viewModelScope.launch(Dispatchers.IO) {
-            try {
+//            try {
                 val newListName = repository.generateNewShoppingListName()
                 // 最新のallShoppingListsから最大orderIndexを取得
                 val newOrderIndex = (allShoppingLists.value.maxOfOrNull { it.orderIndex } ?: -1) + 1
                 val newList = ShoppingList(name = newListName, orderIndex = newOrderIndex)
                 val newListId = repository.insertShoppingList(newList)
                     .toInt() // insertShoppingListはLongを返すのでIntに変換
-                Log.d("Debug","newListid : ${newListId.toString()}")
-                delay(1000)
+//                Log.d("Debug","newListid : ${newListId.toString()}")
                 _currentListId.value = newListId // 新しいリストに切り替える
-            }catch(e: Exception){
-                Log.d("Debug",e.message.toString())
-            }
+//            }catch(e: Exception){
+//                Log.d("Debug",e.message.toString())
+//            }
         }
     }
+
+    val currentShoppingList: StateFlow<ShoppingList?> =
+        _currentListId.filterNotNull()
+            .flatMapLatest { listId ->
+                repository.getShoppingListById(listId)
+            }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = null
+            )
 
     /**
      * 現在の買い物リストを更新する

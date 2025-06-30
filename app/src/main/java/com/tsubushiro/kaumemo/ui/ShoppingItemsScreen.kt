@@ -47,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.tsubushiro.kaumemo.data.ShoppingItem
 
@@ -58,7 +59,8 @@ fun ShoppingItemsScreen(
     shoppingItemsViewModel: ShoppingItemsViewModel // = hiltViewModel()
 ) {
     // ★ ViewModelからリスト名を収集 ★
-    val shoppingListName by shoppingItemsViewModel.shoppingListName.collectAsState()
+//    val shoppingListName by shoppingItemsViewModel.shoppingListName.collectAsState()
+    val currentShoppingList by shoppingItemsViewModel.currentShoppingList.collectAsStateWithLifecycle()
 
     val shoppingItems by shoppingItemsViewModel.shoppingItems.collectAsState() // ViewModelからアイテムの状態を収集
     var showAddItemDialog by remember { mutableStateOf(false) } // アイテム追加ダイアログ表示状態
@@ -67,13 +69,15 @@ fun ShoppingItemsScreen(
     var showConfirmDeleteDialog by remember { mutableStateOf(false) } // 削除確認ダイアログの表示状態
     var itemToDelete by remember { mutableStateOf<ShoppingItem?>(null) } // 削除対象のアイテム
 
-
     val allShoppingLists by shoppingItemsViewModel.allShoppingLists.collectAsState() // ★追加★
-    val currentListId by shoppingItemsViewModel.currentListId.collectAsState() // ★追加★
+//    val currentListId by shoppingItemsViewModel.currentListId.collectAsState() // ★追加★
 
     // 現在選択されているタブのインデックスを見つける
-    val selectedTabIndex = remember(currentListId, allShoppingLists) {
-        allShoppingLists.indexOfFirst { it.id == currentListId }
+//    val selectedTabIndex = remember(currentListId, allShoppingLists) {
+//        allShoppingLists.indexOfFirst { it.id == currentListId }
+//    }
+    val selectedTabIndex = remember(currentShoppingList?.id, allShoppingLists) {
+        allShoppingLists.indexOfFirst { it.id == currentShoppingList?.id }
     }
 
     // 今回は簡易的に「リストID: $listId」をタイトルにする
@@ -107,7 +111,8 @@ fun ShoppingItemsScreen(
 //                    }
 //                )
                 TopAppBar(
-                    title = { Text(shoppingListName ?: "読み込み中...") },
+//                    title = { Text(shoppingListName ?: "読み込み中...") },
+                    title = { Text(currentShoppingList?.name ?: "読み込み中...") },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.primary,
                         titleContentColor = MaterialTheme.colorScheme.onPrimary
