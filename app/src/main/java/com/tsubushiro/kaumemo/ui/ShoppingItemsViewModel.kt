@@ -199,7 +199,7 @@ class ShoppingItemsViewModel @Inject constructor(
     }
 
     fun createNewListAndSwitchToIt() {
-//        Log.d("Debug","よんだ？")
+        Log.d("Debug","よんだ？")
         viewModelScope.launch(Dispatchers.IO) {
 //            try {
                 val newListName = repository.generateNewShoppingListName()

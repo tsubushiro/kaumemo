@@ -75,7 +75,7 @@ class ShoppingRepository(
 //            existingLists.first().id.toLong() // ★IntをLongに変換してから返す★
 //        }
         return if (existingLists.isNullOrEmpty()) {
-            val defaultListName = "買い物メモ"
+            val defaultListName = "新規リスト"
             val newOrderIndex = (shoppingListDao.getLastListOrderIndex() ?: -1) + 1
             val defaultList = ShoppingList(name = defaultListName, orderIndex = newOrderIndex)
             Log.d("PerfLog", "insert defaultList Start: ${System.currentTimeMillis()}")
@@ -91,7 +91,7 @@ class ShoppingRepository(
     }
 
     // 連番リスト名生成ロジック。
-    suspend fun generateNewShoppingListName(baseName: String = "買い物リスト"): String {
+    suspend fun generateNewShoppingListName(baseName: String = "新規リスト"): String {
         val count = shoppingListDao.getListNameCount(baseName)
         return if (count == 0) baseName else "$baseName${count + 1}"
     }

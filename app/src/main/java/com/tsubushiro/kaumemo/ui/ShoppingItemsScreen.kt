@@ -38,6 +38,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -80,8 +81,16 @@ fun ShoppingItemsScreen(
         allShoppingLists.indexOfFirst { it.id == currentShoppingList?.id }
     }
 
-    // 今回は簡易的に「リストID: $listId」をタイトルにする
-//    val listName = "リストID: $listId" // 仮のリスト名
+    // Navigation経由でlistIdが変更された場合に、ViewModelの現在のlistIdを更新する
+    // これにより、タブ切り替えなどではなく、完全に別のリスト詳細画面に遷移した場合にVMが正しく対応できる
+    LaunchedEffect(listId) {
+        // ★修正点: listIdがnullでない場合のみ処理を実行★
+        listId?.let { nonNullListId ->
+            if (nonNullListId != currentShoppingList?.id) {
+                shoppingItemsViewModel.updateCurrentListId(nonNullListId)
+            }
+        }
+    }
 
     Scaffold(
 //        topBar = {
