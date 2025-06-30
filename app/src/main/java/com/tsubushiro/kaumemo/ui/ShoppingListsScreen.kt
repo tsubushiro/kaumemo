@@ -86,12 +86,12 @@ fun ShoppingListsScreen(
     val state = rememberReorderableLazyListState(
         onMove = { from, to ->
             // ViewModelの並び替えメソッドを呼び出す
-            Log.d("ShoppingListScreen","よんだ？_onMove")
+//            Log.d("ShoppingListScreen","よんだ？_onMove")
             viewModel.onListReordered(from.index, to.index)
         },
         onDragEnd = { start, end ->
             // ドラッグ終了時に触覚フィードバック
-            Log.d("ShoppingListScreen","よんだ？_onDragEnd")
+//            Log.d("ShoppingListScreen","よんだ？_onDragEnd")
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         }
     )

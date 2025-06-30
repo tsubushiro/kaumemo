@@ -14,8 +14,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -31,7 +31,7 @@ class ShoppingItemsViewModel @Inject constructor(
  //   private val listId: Int = 1
 
     // ナビゲーション引数から渡されるlistId (初回起動時は利用されないが、タブ切り替えで使われる)
-    private val navListId: Int? = savedStateHandle["listId"]
+//    private val navListId: Int? = savedStateHandle["listId"]
 
     // 現在表示中のリストのIDを管理するStateFlow
     private val _currentListId = MutableStateFlow<Int?>(null)
@@ -40,46 +40,83 @@ class ShoppingItemsViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             Log.d("PerfLog", "ViewModel init block Start: ${System.currentTimeMillis()}")
-            // アプリ起動時にデフォルトリストを作成/最初のリストを決定
-//            try{
-                // repository.createDefaultShoppingListIfNeeded() は Long を返すようになった
-                // そのため、結果を Int に変換して _currentListId.value にセット
-                val resolvedListIdLong: Long = navListId?.toLong() // navListIdがInt?なのでLong?に変換
-                    ?: repository.createDefaultShoppingListIfNeeded()
+            val navListIdFromSavedState: Int? = savedStateHandle["listId"]
 
-                // Long を Int に安全に変換してセット
-                _currentListId.value = resolvedListIdLong.coerceIn(Int.MIN_VALUE.toLong(), Int.MAX_VALUE.toLong()).toInt()
-//            }catch(e: Exception){
-//                Log.d("ShopppingItemViewModel","よんだ？"+e.toString())
-//            }
+            // 初回起動時にリストIDを決定し、設定する
+            val resolvedInitialId = determineAndSetInitialListId(navListIdFromSavedState)
+            _currentListId.value = resolvedInitialId
+
             Log.d("PerfLog", "ViewModel init block End: ${System.currentTimeMillis()}")
-
-            // currentListId の変更を監視し、allShoppingLists のデータが揃ったら初期リストが選択されるようにする
-            // allShoppingLists.collect { lists ->
-            //     if (_currentListId.value == null && lists.isNotEmpty()) {
-            //         _currentListId.value = navListId ?: lists.first().id // タブ切り替え後の初回起動リスト
-            //     } else if (_currentListId.value == null && lists.isEmpty()) {
-            //         // まだリストがない場合は自動作成
-            //         val newDefaultListId = repository.createDefaultShoppingListIfNeeded().toInt()
-            //         _currentListId.value = newDefaultListId
-            //     }
-            // }
-            // 上のコメントアウト部分を init ロックの最初に書いても同じ
         }
     }
-    val shoppingListName: StateFlow<String> =
-        _currentListId.filterNotNull() // nullが流れてくることを防ぐ
-            .flatMapLatest { listId -> // listIdの変更を監視し、その都度リスト名を取得
-                repository.getShoppingListById(listId)
+
+    /**
+     * 指定されたIDと現在のリストの状態に基づいて、最終的に設定すべきリストIDを決定する共通ロジック。
+     * リストが存在しない場合は新規作成、指定IDが無効な場合は最初のリストにフォールバックします。
+     *
+     * @param preferredListId 優先したいリストID（ナビゲーション引数、またはタブ選択からのID）
+     * @return 最終的に決定されたリストID
+     */
+    private suspend fun determineAndSetInitialListId(preferredListId: Int?): Int {
+        val allExistingLists = repository.getAllShoppingListsSorted().first() // 最新のリストデータを取得
+
+        return if (allExistingLists.isEmpty()) {
+            // 1. ShoppingListにデータがない場合: 新規のデータを作成してそのidを返す
+            val newDefaultListId = repository.createDefaultShoppingListIfNeeded().toInt()
+            Log.d("ShoppingItemsViewModel", "DETERMINE: No lists found. Created new default list ID: $newDefaultListId")
+            newDefaultListId
+        } else {
+            // preferredListIdが指定されており、かつそのIDのリストが存在するか確認
+            val targetListExists = preferredListId != null && allExistingLists.any { it.id == preferredListId }
+
+            if (targetListExists) {
+                // 2. preferredListIdが有効な場合、それを返す
+                Log.d("ShoppingItemsViewModel", "DETERMINE: Valid preferredListId found. Using ID: $preferredListId")
+                preferredListId!! // nullチェック済みなので !! を使用
+            } else {
+                // 3. preferredListIdが無効な場合（存在しない場合）、ソート順で一番若いリストにフォールバック
+                val firstListId = allExistingLists.first().id
+                Log.d("ShoppingItemsViewModel", "DETERMINE: PreferredListId $preferredListId not found or null. Fallback to first sorted list: $firstListId")
+                firstListId
             }
-            .map { shoppingList ->
-                shoppingList?.name ?: "不明なリスト"
+        }
+    }
+
+    /**
+     * Composableからナビゲーション引数として受け取ったID、またはタブ選択で指定されたIDを処理し、
+     * _currentListIdを更新する（存在しないIDの場合は最初のリストにフォールバック）。
+     *
+     * @param incomingListId ナビゲーションやタブ選択で指定されたリストID
+     */
+    fun resolveAndSetCurrentListId(incomingListId: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            // 現在のViewModelの状態が既に最新であれば何もしない
+            if (_currentListId.value == incomingListId) {
+                Log.d("ShoppingItemsViewModel", "RESOLVE: Already on list ID: $incomingListId. No change needed.")
+                return@launch
             }
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5000),
-                initialValue = "読込中..."
-            )
+
+            // ★ 既存のリストへの切り替えもローディング状態を考慮する場合はここに_isLoadingNewList.value = trueを追加 ★
+            val resolvedId = determineAndSetInitialListId(incomingListId)
+            _currentListId.value = resolvedId
+            Log.d("ShoppingItemsViewModel", "RESOLVE: Set current list ID to resolved ID: $resolvedId (from incoming: $incomingListId)")
+            // ★ ローディング状態を考慮する場合はここに_isLoadingNewList.value = falseを追加 ★
+        }
+    }
+
+//    val shoppingListName: StateFlow<String> =
+//        _currentListId.filterNotNull() // nullが流れてくることを防ぐ
+//            .flatMapLatest { listId -> // listIdの変更を監視し、その都度リスト名を取得
+//                repository.getShoppingListById(listId)
+//            }
+//            .map { shoppingList ->
+//                shoppingList?.name ?: "不明なリスト"
+//            }
+//            .stateIn(
+//                scope = viewModelScope,
+//                started = SharingStarted.WhileSubscribed(5000),
+//                initialValue = "読込中..."
+//            )
 
     val shoppingItems: StateFlow<List<ShoppingItem>> =
         _currentListId.filterNotNull() // nullが流れてくることを防ぐ
@@ -162,7 +199,7 @@ class ShoppingItemsViewModel @Inject constructor(
     }
 
     fun createNewListAndSwitchToIt() {
-        Log.d("Debug","よんだ？")
+//        Log.d("Debug","よんだ？")
         viewModelScope.launch(Dispatchers.IO) {
 //            try {
                 val newListName = repository.generateNewShoppingListName()
@@ -172,7 +209,7 @@ class ShoppingItemsViewModel @Inject constructor(
                 val newListId = repository.insertShoppingList(newList)
                     .toInt() // insertShoppingListはLongを返すのでIntに変換
 //                Log.d("Debug","newListid : ${newListId.toString()}")
-                _currentListId.value = newListId // 新しいリストに切り替える
+                _currentListId.value = newListId // 新しいリストに切り替えある
 //            }catch(e: Exception){
 //                Log.d("Debug",e.message.toString())
 //            }
@@ -195,7 +232,10 @@ class ShoppingItemsViewModel @Inject constructor(
      * @param listId 更新するリストのID
      */
     fun updateCurrentListId(listId: Int) {
-        _currentListId.value = listId
+//        _currentListId.value = listId
+        // updateCurrentListId は resolveAndSetCurrentListId を呼び出すようにする
+        // これにより、タブ選択で無効なIDが渡された場合もフォールバックロジックが適用される
+        resolveAndSetCurrentListId(listId)
         Log.d("ShoppingItemsViewModel", "Current List ID updated to: $listId")
     }
 }
