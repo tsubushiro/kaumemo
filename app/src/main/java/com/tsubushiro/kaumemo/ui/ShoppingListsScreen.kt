@@ -275,7 +275,7 @@ fun ShoppingListCard(
                 // detectReorderAfterLongPressとは競合しないため、併用可能。
                 // IconButtonは自身のonClickを持つため、ここでのclickableはリスト名タップに有効
                 .clickable { onListClick(shoppingList) }
-                .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 8.dp), // 全体的なパディングを調整
+                .padding(4.dp), // 全体的なパディングを調整
             verticalAlignment = Alignment.CenterVertically // 垂直方向中央揃え
         ) {
             // 左側の編集ボタン
@@ -283,7 +283,7 @@ fun ShoppingListCard(
                 onClick = { onEditClick(shoppingList) },
                 modifier = Modifier.size(48.dp) // タップターゲットを大きくする
             ) {
-                Icon(Icons.Default.Edit, contentDescription = "リストを編集")
+                Icon(Icons.Default.Edit, contentDescription = "リストを編集",modifier = Modifier.size(20.dp))
             }
 
             // リスト名 (中央に配置し、残りのスペースを占める)
@@ -300,7 +300,7 @@ fun ShoppingListCard(
                 onClick = { onDeleteClick(shoppingList) },
                 modifier = Modifier.size(48.dp) // タップターゲットを大きくする
             ) {
-                Icon(Icons.Default.Delete, contentDescription = "リストを削除")
+                Icon(Icons.Default.Delete, contentDescription = "リストを削除",modifier = Modifier.size(20.dp))
             }
 
             // ドラッグハンドル (一番右に配置)
