@@ -20,10 +20,15 @@ interface ShoppingItemDao {
     suspend fun delete(shoppingItem: ShoppingItem) // アイテムの削除
 
     // 特定のリストに紐づくアイテムを未購入が上、購入済みが下、それぞれ作成日時降順で取得
+//    @Query("""
+//        SELECT * FROM shopping_items
+//        WHERE listId = :listId
+//        ORDER BY isPurchased ASC, createdAt DESC
+//    """)
     @Query("""
         SELECT * FROM shopping_items 
         WHERE listId = :listId 
-        ORDER BY isPurchased ASC, createdAt DESC
+        ORDER BY createdAt DESC
     """)
     fun getShoppingItemsForList(listId: Int): Flow<List<ShoppingItem>>
 

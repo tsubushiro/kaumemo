@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -45,8 +46,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.tsubushiro.kaumemo.data.ShoppingItem
@@ -120,7 +123,16 @@ fun ShoppingItemsScreen(
 //                )
                 TopAppBar(
 //                    title = { Text(shoppingListName ?: "読み込み中...") },
-                    title = { Text(currentShoppingList?.name ?: "読み込み中...") },
+//                    title = { Text(currentShoppingList?.name ?: "読み込み中...") },
+                    title = {
+                        Text(
+                            if (currentShoppingList == null) {
+                                "読み込み中..."
+                            } else {
+                                "アイテム編集"
+                            }
+                        )
+                            },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.primary,
                         titleContentColor = MaterialTheme.colorScheme.onPrimary
@@ -135,27 +147,64 @@ fun ShoppingItemsScreen(
 //                        }
 //                    },
                     actions = {
-                        IconButton(onClick = { shoppingItemsViewModel.createNewListAndSwitchToIt() }) {
-                            Icon(
-                                Icons.Filled.Add,
-                                contentDescription = "新しいリストを作成",
-                                tint = MaterialTheme.colorScheme.onPrimary
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            IconButton(onClick = { shoppingItemsViewModel.createNewListAndSwitchToIt() }) {
+                                Icon(
+                                    Icons.Filled.Add,
+                                    contentDescription = "新しいリストを作成",
+                                    tint = MaterialTheme.colorScheme.onPrimary
+                                )
+                            }
+                            Text(
+                                text = "リスト",
+                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.offset(y = (-4).dp) // ここを調整
                             )
                         }
-//                        IconButton(onClick = { showConfirmDeleteListDialog = true }) {
+                        Spacer(modifier = Modifier.width(8.dp)) // アイコン間のスペース調整
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            IconButton(onClick = { navController.navigate("shopping_lists_route") }) {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.List,
+                                    contentDescription = "リスト一覧",
+                                    tint = MaterialTheme.colorScheme.onPrimary
+                                )
+                            }
+                            Text(
+                                text = "リスト",
+                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.offset(y = (-4).dp) // ここを調整
+                            )
+                        }
+//                        IconButton(onClick = { shoppingItemsViewModel.createNewListAndSwitchToIt() }) {
 //                            Icon(
-//                                Icons.Filled.Delete,
-//                                contentDescription = "現在のリストを削除",
+//                                Icons.Filled.Add,
+//                                contentDescription = "新しいリストを作成",
 //                                tint = MaterialTheme.colorScheme.onPrimary
 //                            )
 //                        }
-                        IconButton(onClick = { navController.navigate("shopping_lists_route") }) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.List,
-                                contentDescription = "リスト一覧",
-                                tint = MaterialTheme.colorScheme.onPrimary
-                            )
-                        }
+////                        IconButton(onClick = { showConfirmDeleteListDialog = true }) {
+////                            Icon(
+////                                Icons.Filled.Delete,
+////                                contentDescription = "現在のリストを削除",
+////                                tint = MaterialTheme.colorScheme.onPrimary
+////                            )
+////                        }
+//                        IconButton(onClick = { navController.navigate("shopping_lists_route") }) {
+//                            Icon(
+//                                Icons.AutoMirrored.Filled.List,
+//                                contentDescription = "リスト一覧",
+//                                tint = MaterialTheme.colorScheme.onPrimary
+//                            )
+//                        }
                     }
                 )
 
@@ -197,7 +246,17 @@ fun ShoppingItemsScreen(
                 .padding(paddingValues)
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            if (shoppingItems.isEmpty()) {
+            if (currentShoppingList == null){
+                item {
+                    Text(
+                        "アイテム読み込み中...",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            }else if (shoppingItems.isEmpty()) {
                 item {
                     Text(
                         "まだアイテムがありません。\n右下のボタンから新しいアイテムを追加しましょう！",
@@ -288,8 +347,9 @@ fun ShoppingItemCard(
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .combinedClickable( // 長押し対応
-                onClick = { onTogglePurchased(shoppingItem) }, // タップでチェック切り替え
-                onLongClick = { onEditClick(shoppingItem) } // 長押しで編集（簡易）
+//                onClick = { onTogglePurchased(shoppingItem) }, // タップでチェック切り替え
+//                onLongClick = { onEditClick(shoppingItem) } // 長押しで編集（簡易）
+                onClick = { onEditClick(shoppingItem) }, // タップでチェック切り替え
             ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {

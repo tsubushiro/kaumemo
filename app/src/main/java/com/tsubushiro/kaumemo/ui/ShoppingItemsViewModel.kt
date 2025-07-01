@@ -37,18 +37,18 @@ class ShoppingItemsViewModel @Inject constructor(
     private val _currentListId = MutableStateFlow<Int?>(null)
     val currentListId = _currentListId.asStateFlow()
 
-    init {
-        viewModelScope.launch {
-            Log.d("PerfLog", "ViewModel init block Start: ${System.currentTimeMillis()}")
-            val navListIdFromSavedState: Int? = savedStateHandle["listId"]
-
-            // 初回起動時にリストIDを決定し、設定する
-            val resolvedInitialId = determineAndSetInitialListId(navListIdFromSavedState)
-            _currentListId.value = resolvedInitialId
-
-            Log.d("PerfLog", "ViewModel init block End: ${System.currentTimeMillis()}")
-        }
-    }
+//    init {
+//        viewModelScope.launch {
+//            Log.d("PerfLog", "ViewModel init block Start: ${System.currentTimeMillis()}")
+//            val navListIdFromSavedState: Int? = savedStateHandle["listId"]
+//
+//            // 初回起動時にリストIDを決定し、設定する
+//            val resolvedInitialId = determineAndSetInitialListId(navListIdFromSavedState)
+//            _currentListId.value = resolvedInitialId
+//
+//            Log.d("PerfLog", "ViewModel init block End: ${System.currentTimeMillis()}")
+//        }
+//    }
 
     /**
      * 指定されたIDと現在のリストの状態に基づいて、最終的に設定すべきリストIDを決定する共通ロジック。
