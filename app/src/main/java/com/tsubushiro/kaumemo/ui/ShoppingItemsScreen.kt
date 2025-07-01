@@ -286,6 +286,9 @@ fun ShoppingItemsScreen(
                     )
                 }
             }
+            item {
+                Spacer(modifier = Modifier.height(paddingValues.calculateBottomPadding())) // FABとBottomBarの高さ分を確保
+            }
         }
     }
 
