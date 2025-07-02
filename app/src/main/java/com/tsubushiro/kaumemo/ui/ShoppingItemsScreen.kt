@@ -60,7 +60,7 @@ import com.tsubushiro.kaumemo.data.ShoppingItem
 fun ShoppingItemsScreen(
     navController: NavController,
     listId: Int?, // ナビゲーション引数としてリストIDを受け取る
-    shoppingItemsViewModel: ShoppingItemsViewModel // = hiltViewModel()
+    shoppingItemsViewModel: ShoppingViewModel // = hiltViewModel()
 ) {
     // ★ ViewModelからリスト名を収集 ★
 //    val shoppingListName by shoppingItemsViewModel.shoppingListName.collectAsState()
@@ -73,15 +73,15 @@ fun ShoppingItemsScreen(
     var showConfirmDeleteDialog by remember { mutableStateOf(false) } // 削除確認ダイアログの表示状態
     var itemToDelete by remember { mutableStateOf<ShoppingItem?>(null) } // 削除対象のアイテム
 
-    val allShoppingLists by shoppingItemsViewModel.allShoppingLists.collectAsState() // ★追加★
+    val shoppingLists by shoppingItemsViewModel.shoppingLists.collectAsState() // ★追加★
 //    val currentListId by shoppingItemsViewModel.currentListId.collectAsState() // ★追加★
 
     // 現在選択されているタブのインデックスを見つける
-//    val selectedTabIndex = remember(currentListId, allShoppingLists) {
-//        allShoppingLists.indexOfFirst { it.id == currentListId }
+//    val selectedTabIndex = remember(currentListId, shoppingLists) {
+//        shoppingLists.indexOfFirst { it.id == currentListId }
 //    }
-    val selectedTabIndex = remember(currentShoppingList?.id, allShoppingLists) {
-        allShoppingLists.indexOfFirst { it.id == currentShoppingList?.id }
+    val selectedTabIndex = remember(currentShoppingList?.id, shoppingLists) {
+        shoppingLists.indexOfFirst { it.id == currentShoppingList?.id }
     }
 
     // Navigation経由でlistIdが変更された場合に、ViewModelの現在のlistIdを更新する
@@ -210,7 +210,7 @@ fun ShoppingItemsScreen(
                 )
 
                 // ★追加: タブバー（リスト切り替え用）
-                if (allShoppingLists.isNotEmpty()) { // リストが一つも無い場合はタブを表示しない
+                if (shoppingLists.isNotEmpty()) { // リストが一つも無い場合はタブを表示しない
                     ScrollableTabRow(
                         selectedTabIndex = selectedTabIndex.coerceAtLeast(0), // インデックスが-1にならないように
                         containerColor = MaterialTheme.colorScheme.primaryContainer, // タブバー全体の背景色（そのまま）
@@ -225,7 +225,7 @@ fun ShoppingItemsScreen(
 //                             )
 //                         },
                     ) {
-                        allShoppingLists.forEachIndexed { index, shoppingList ->
+                        shoppingLists.forEachIndexed { index, shoppingList ->
                             Tab(
                                 selected = selectedTabIndex == index,
                                 onClick = { shoppingItemsViewModel.updateCurrentListId(shoppingList.id) }, // タブクリックでリストを切り替え

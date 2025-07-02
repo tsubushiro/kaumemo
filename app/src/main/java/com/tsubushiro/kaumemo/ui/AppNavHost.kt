@@ -14,8 +14,10 @@ fun AppNavHost(
     navController: NavHostController = rememberNavController() // デフォルトで新しいNavControllerを作成
     ,
     // ★ ViewModelを引数として受け取るように変更 ★
-    shoppingItemsViewModel: ShoppingItemsViewModel,
-    shoppingListsViewModel: ShoppingListsViewModel
+//    shoppingItemsViewModel: ShoppingItemsViewModel,
+//    shoppingListsViewModel: ShoppingListsViewModel
+    shoppingItemsViewModel: ShoppingViewModel,
+    shoppingListsViewModel: ShoppingViewModel
 ) {
 //    Log.d("AppNavHost","よんだ？")
 //    val shoppingItemsViewModel: ShoppingItemsViewModel = viewModel() // Hiltの場合は hiltViewModel()
@@ -36,11 +38,15 @@ fun AppNavHost(
                 val listId = backStackEntry.arguments?.getInt("listId")
                 // ここで listId をViewModelに渡す必要は、hiltViewModel() が SavedStateHandle を通じて自動で行うため不要
 //                ShoppingItemsScreen(navController = navController, listId = listId) // ViewModelを共有
-                ShoppingItemsScreen(navController = navController, listId = listId, shoppingItemsViewModel = shoppingItemsViewModel)
+                ShoppingItemsScreen(navController = navController, listId = listId,
+                    shoppingItemsViewModel = shoppingItemsViewModel
+                )
             }
 
             composable("shopping_lists_route") {
-                ShoppingListsScreen(navController = navController ,shoppingListsViewModel= shoppingListsViewModel)
+                ShoppingListsScreen(navController = navController ,
+                    shoppingListsViewModel= shoppingListsViewModel
+                )
             }
 
             // ... 他のルート

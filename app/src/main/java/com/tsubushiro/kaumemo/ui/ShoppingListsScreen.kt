@@ -75,7 +75,7 @@ fun ShoppingListsScreen(
 //            }
 //        }
 //    )
-    shoppingListsViewModel: ShoppingListsViewModel // ここを変更
+    shoppingListsViewModel: ShoppingViewModel // ここを変更
 ) {
     val shoppingLists by shoppingListsViewModel.shoppingLists.collectAsState() // ViewModelからリストの状態を収集
     var showAddListDialog by remember { mutableStateOf(false) } // リスト追加ダイアログの表示状態
@@ -83,6 +83,8 @@ fun ShoppingListsScreen(
     var showConfirmDeleteDialog by remember { mutableStateOf(false) } // 削除確認ダイアログの状態
     var editingList by remember { mutableStateOf<ShoppingList?>(null) } // 編集中のリストを保持
     var deletingList by remember { mutableStateOf<ShoppingList?>(null) } // 削除対象のリストを保持
+
+    val currentListId by shoppingListsViewModel.currentListId.collectAsState() // ★追加★
 
     // ★Compose-Reorderableの状態を管理するState★
     val haptic = LocalHapticFeedback.current // 触覚フィードバック
@@ -115,7 +117,7 @@ fun ShoppingListsScreen(
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        IconButton(onClick = { navController.navigate("shopping_items_route/0") }) {
+                        IconButton(onClick = { navController.navigate("shopping_items_route/${currentListId}") }) {
                             Icon(
                                 Icons.AutoMirrored.Filled.List,
                                 contentDescription = "リスト一覧",
@@ -272,7 +274,7 @@ fun ShoppingListsScreen(
     // ★削除確認ダイアログ★ ※Itemと同じ
     if (showConfirmDeleteDialog && deletingList != null) {
         ConfirmDeleteDialog(
-            itemName = "${deletingList!!.name} を削除しますか？",
+            itemName = deletingList!!.name,
             onConfirmDelete = {
                 shoppingListsViewModel.deleteShoppingList(deletingList!!) // ViewModelの削除メソッドを呼び出す
                 showConfirmDeleteDialog = false
