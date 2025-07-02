@@ -320,7 +320,7 @@ fun ShoppingListCard(
                 onClick = { onEditClick(shoppingList) },
                 modifier = Modifier.size(48.dp) // タップターゲットを大きくする
             ) {
-                Icon(Icons.Default.Edit, contentDescription = "リストを編集",modifier = Modifier.size(20.dp))
+                Icon(Icons.Default.Edit, contentDescription = "リストを編集")
             }
 
             // リスト名 (中央に配置し、残りのスペースを占める)
@@ -337,7 +337,7 @@ fun ShoppingListCard(
                 onClick = { onDeleteClick(shoppingList) },
                 modifier = Modifier.size(48.dp) // タップターゲットを大きくする
             ) {
-                Icon(Icons.Default.Delete, contentDescription = "リストを削除",modifier = Modifier.size(20.dp))
+                Icon(Icons.Default.Delete, contentDescription = "リストを削除")
             }
 
             // ドラッグハンドル (一番右に配置)

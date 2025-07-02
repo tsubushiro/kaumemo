@@ -1,6 +1,7 @@
 package com.tsubushiro.kaumemo.ui
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -127,7 +127,7 @@ fun ShoppingItemsScreen(
 //                    title = { Text(currentShoppingList?.name ?: "読み込み中...") },
                     title = {
                         Text(
-                            if (currentShoppingList == null) {
+                            text = if (currentShoppingList == null) {
                                 "読み込み中..."
                             } else {
                                 "アイテム編集"
@@ -213,14 +213,48 @@ fun ShoppingItemsScreen(
                 if (allShoppingLists.isNotEmpty()) { // リストが一つも無い場合はタブを表示しない
                     ScrollableTabRow(
                         selectedTabIndex = selectedTabIndex.coerceAtLeast(0), // インデックスが-1にならないように
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        containerColor = MaterialTheme.colorScheme.primaryContainer, // タブバー全体の背景色（そのまま）
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer, // 未選択タブのテキスト色など（そのまま）
+                        // ★ここから追加・変更★
+                        edgePadding = 0.dp, // 端のパディングをなくして、タブが左右いっぱいに使えるように（好みで調整）
+                        indicator = {}
+//                         indicator = { tabPositions ->
+//                             TabRowDefaults.SecondaryIndicator(
+//                                 modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex.coerceAtLeast(0)]),
+//                                 color = MaterialTheme.colorScheme.primaryContainer,
+//                             )
+//                         },
                     ) {
                         allShoppingLists.forEachIndexed { index, shoppingList ->
                             Tab(
                                 selected = selectedTabIndex == index,
                                 onClick = { shoppingItemsViewModel.updateCurrentListId(shoppingList.id) }, // タブクリックでリストを切り替え
-                                text = { Text(shoppingList.name) }
+                                text = {
+                                    Text(
+                                        text = shoppingList.name,
+                                        color = if (selectedTabIndex == index) {
+                                            // ★選択中のタブの文字色 (背景がSecondaryなのでonSecondaryが最適)★
+                                            MaterialTheme.colorScheme.secondary
+                                        } else {
+                                            MaterialTheme.colorScheme.onPrimaryContainer // 非選択のタブの文字色
+                                        }
+                                    )
+                                },
+                                // ★ここを修正: 選択中のタブの背景色を設定★
+                                modifier = if (selectedTabIndex == index) {
+                                    Modifier
+                                        .background(
+                                            color = MaterialTheme.colorScheme.background, // ★選択中のタブの背景色をアプリの背景色に★
+//                                            shape = MaterialTheme.shapes.small // テーマで定義された角の丸みを使用
+                                            // または RoundedCornerShape(8.dp) のように直接指定することも可能
+                                        )
+                                        // 背景色を適用した後に、Tab全体のパディングを調整すると見栄えが良くなります
+                                       // .padding(horizontal = 16.dp, vertical = 8.dp) // 例: タブ内のコンテンツのパディングを調整
+                                } else {
+                                    // 未選択のタブには背景色なし（または別の色を指定）
+//                                    Modifier.padding(horizontal = 16.dp, vertical = 8.dp) // 未選択のタブにも同じパディングを適用して高さを揃える
+                                    Modifier
+                                }
                             )
                         }
                     }
@@ -381,7 +415,7 @@ fun ShoppingItemCard(
             )
             // 削除ボタン (簡易的にアイコンボタンを配置)
             IconButton(onClick = { onDeleteClick(shoppingItem) }) {
-                Icon(Icons.Default.Delete, contentDescription = "削除",modifier = Modifier.size(20.dp))
+                Icon(Icons.Default.Delete, contentDescription = "削除")
             }
         }
     }

@@ -9,10 +9,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import com.example.compose.KaumemoTheme
 import com.google.android.gms.ads.MobileAds
 import com.tsubushiro.kaumemo.ui.AppNavHost
 import com.tsubushiro.kaumemo.ui.ShoppingItemsViewModel
-import com.tsubushiro.kaumemo.ui.theme.KaumemoTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint // ここにHiltのエントリーポイントアノテーションを追加
