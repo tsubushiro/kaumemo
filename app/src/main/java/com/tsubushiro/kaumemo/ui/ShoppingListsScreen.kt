@@ -53,7 +53,6 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.tsubushiro.kaumemo.data.ShoppingList
 import org.burnoutcrew.reorderable.ReorderableItem
@@ -76,9 +75,9 @@ fun ShoppingListsScreen(
 //            }
 //        }
 //    )
-    viewModel: ShoppingListsViewModel = hiltViewModel() // ここを変更
+    shoppingListsViewModel: ShoppingListsViewModel // ここを変更
 ) {
-    val shoppingLists by viewModel.shoppingLists.collectAsState() // ViewModelからリストの状態を収集
+    val shoppingLists by shoppingListsViewModel.shoppingLists.collectAsState() // ViewModelからリストの状態を収集
     var showAddListDialog by remember { mutableStateOf(false) } // リスト追加ダイアログの表示状態
     var showEditListDialog by remember { mutableStateOf(false) } // リスト編集ダイアログの表示状態
     var showConfirmDeleteDialog by remember { mutableStateOf(false) } // 削除確認ダイアログの状態
@@ -91,7 +90,7 @@ fun ShoppingListsScreen(
         onMove = { from, to ->
             // ViewModelの並び替えメソッドを呼び出す
 //            Log.d("ShoppingListScreen","よんだ？_onMove")
-            viewModel.onListReordered(from.index, to.index)
+            shoppingListsViewModel.onListReordered(from.index, to.index)
         },
         onDragEnd = { start, end ->
             // ドラッグ終了時に触覚フィードバック
@@ -247,7 +246,7 @@ fun ShoppingListsScreen(
     if (showAddListDialog) {
         AddListDialog(
             onAddList = { listName ->
-                viewModel.addShoppingList(listName)
+                shoppingListsViewModel.addShoppingList(listName)
                 showAddListDialog = false
             },
             onDismiss = { showAddListDialog = false }
@@ -259,7 +258,7 @@ fun ShoppingListsScreen(
         EditListDialog(
             shoppingList = editingList!!, // ! を使ってnullでないことを保証
             onEditList = { updatedList ->
-                viewModel.updateShoppingList(updatedList) // ViewModelの更新メソッドを呼び出し
+                shoppingListsViewModel.updateShoppingList(updatedList) // ViewModelの更新メソッドを呼び出し
                 showEditListDialog = false // ダイアログを閉じる
                 editingList = null         // 編集対象をクリア
             },
@@ -275,7 +274,7 @@ fun ShoppingListsScreen(
         ConfirmDeleteDialog(
             itemName = "${deletingList!!.name} を削除しますか？",
             onConfirmDelete = {
-                viewModel.deleteShoppingList(deletingList!!) // ViewModelの削除メソッドを呼び出す
+                shoppingListsViewModel.deleteShoppingList(deletingList!!) // ViewModelの削除メソッドを呼び出す
                 showConfirmDeleteDialog = false
                 deletingList = null
             },

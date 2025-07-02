@@ -14,7 +14,8 @@ fun AppNavHost(
     navController: NavHostController = rememberNavController() // デフォルトで新しいNavControllerを作成
     ,
     // ★ ViewModelを引数として受け取るように変更 ★
-    shoppingItemsViewModel: ShoppingItemsViewModel // ここに引数を追加
+    shoppingItemsViewModel: ShoppingItemsViewModel,
+    shoppingListsViewModel: ShoppingListsViewModel
 ) {
 //    Log.d("AppNavHost","よんだ？")
 //    val shoppingItemsViewModel: ShoppingItemsViewModel = viewModel() // Hiltの場合は hiltViewModel()
@@ -39,7 +40,7 @@ fun AppNavHost(
             }
 
             composable("shopping_lists_route") {
-                ShoppingListsScreen(navController = navController)
+                ShoppingListsScreen(navController = navController ,shoppingListsViewModel= shoppingListsViewModel)
             }
 
             // ... 他のルート

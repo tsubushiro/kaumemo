@@ -13,12 +13,14 @@ import com.example.compose.KaumemoTheme
 import com.google.android.gms.ads.MobileAds
 import com.tsubushiro.kaumemo.ui.AppNavHost
 import com.tsubushiro.kaumemo.ui.ShoppingItemsViewModel
+import com.tsubushiro.kaumemo.ui.ShoppingListsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint // ここにHiltのエントリーポイントアノテーションを追加
 class MainActivity : ComponentActivity() {
     // ★ ここにViewModelをActivityスコープで取得する行を追加 ★
     private val shoppingItemsViewModel: ShoppingItemsViewModel by viewModels()
+    private val shoppingListsViewModel: ShoppingListsViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,33 +33,10 @@ class MainActivity : ComponentActivity() {
                 ) {
                     // ★ ここでMobile Ads SDKを初期化 ★
                     MobileAds.initialize(this) {}
-
-                    // ★ AppNavHost を呼び出す ★
-//                    AppNavHost()
-// ★ AppNavHost の呼び出し時にViewModelを引数として渡す ★
-                    AppNavHost(shoppingItemsViewModel = shoppingItemsViewModel)
-//                    // ナビゲーションコントローラーを作成
-//                    val navController = rememberNavController()
-//
-//                    // ナビゲーションホストを定義 (Day 8のAppNavHostの簡易版)
-//                    NavHost(navController = navController, startDestination = "shopping_lists_route") {
-//                        composable("shopping_lists_route") {
-//                            ShoppingListsScreen(navController = navController)
-//                        }
-//                        // Day 7で実装する個別リスト詳細画面のプレースホルダー
-//                        composable(
-//                            "shopping_items_route/{listId}",
-//                            arguments = listOf(navArgument("listId") { type = NavType.IntType })
-//                        ) { backStackEntry ->
-//                            val listId = backStackEntry.arguments?.getInt("listId") // listIdを取得
-//                            if (listId != null) {
-//                                ShoppingItemsScreen(navController = navController, listId = listId) // ここでShoppingItemsScreenを呼び出す
-//                            } else {
-//                                // エラーハンドリング (listIdがnullの場合)
-//                                Text("エラー: リストIDがありません", modifier = Modifier.fillMaxSize())
-//                            }
-//                        }
-//                    }
+                    AppNavHost(
+                        shoppingItemsViewModel = shoppingItemsViewModel,
+                        shoppingListsViewModel = shoppingListsViewModel
+                    )
                 }
             }
         }
