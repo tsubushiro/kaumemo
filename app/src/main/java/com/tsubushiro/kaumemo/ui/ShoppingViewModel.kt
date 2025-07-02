@@ -74,6 +74,7 @@ class ShoppingViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             // 現在のViewModelの状態が既に最新であれば何もしない
             if (_currentListId.value == incomingListId) {
+                val allExistingLists = repository.getAllShoppingListsSorted().first() // 最新のリストデータを取得
                 Log.d("ShoppingItemsViewModel", "RESOLVE: Already on list ID: $incomingListId. No change needed.")
                 return@launch
             }
@@ -248,6 +249,12 @@ class ShoppingViewModel @Inject constructor(
     fun deleteShoppingList(shoppingList: ShoppingList) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.deleteShoppingList(shoppingList)
+            // 買い物リスト画面で現在選択されているリストが削除された場合
+            if (shoppingList.id == _currentListId.value) {
+                // allShoppingListsの更新を待ってから、新しいcurrentListIdを決定
+                shoppingLists.first { it.none { list -> list.id == shoppingList.id } } // 削除が反映されるまで待機
+                _currentListId.value = determineAndSetInitialListId(null) // nullを渡して最初の有効なリストを探させる
+            }
         }
     }
 
