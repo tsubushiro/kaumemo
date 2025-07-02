@@ -90,6 +90,20 @@ class ShoppingRepository(
         }
     }
 
+    // ViewModel側のcreateNewListをレポジトリ側へ（createDefaultShoppingListIfNeededは不要)
+    suspend fun createNewListAndSwitchToIt() :Int{
+        val newListName = generateNewShoppingListName()
+        val newOrderIndex = (shoppingListDao.getLastListOrderIndex() ?: -1) + 1
+        val defaultList = ShoppingList(name = newListName, orderIndex = newOrderIndex)
+        Log.d("PerfLog", "insert newlist Start: ${System.currentTimeMillis()}")
+        val id = shoppingListDao.insert(defaultList)
+        Log.d("PerfLog", "insert newList End: ${System.currentTimeMillis()}")
+        Log.d("PerfLog", "createNewListAndSwitchToIt End (new): ${System.currentTimeMillis()}")
+        return id.toInt()
+    }
+
+
+
     // 連番リスト名生成ロジック。
     suspend fun generateNewShoppingListName(baseName: String = "新規リスト"): String {
         val count = shoppingListDao.getListNameCount(baseName)

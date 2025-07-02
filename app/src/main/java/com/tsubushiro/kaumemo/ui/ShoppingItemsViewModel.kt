@@ -62,7 +62,7 @@ class ShoppingItemsViewModel @Inject constructor(
 
         return if (allExistingLists.isEmpty()) {
             // 1. ShoppingListにデータがない場合: 新規のデータを作成してそのidを返す
-            val newDefaultListId = repository.createDefaultShoppingListIfNeeded().toInt()
+            val newDefaultListId = repository.createNewListAndSwitchToIt()
             Log.d("ShoppingItemsViewModel", "DETERMINE: No lists found. Created new default list ID: $newDefaultListId")
             newDefaultListId
         } else {
@@ -198,21 +198,10 @@ class ShoppingItemsViewModel @Inject constructor(
         _currentListId.value = listId
     }
 
+    // 新規リスト
     fun createNewListAndSwitchToIt() {
-        Log.d("Debug","よんだ？")
         viewModelScope.launch(Dispatchers.IO) {
-//            try {
-                val newListName = repository.generateNewShoppingListName()
-                // 最新のallShoppingListsから最大orderIndexを取得
-                val newOrderIndex = (allShoppingLists.value.maxOfOrNull { it.orderIndex } ?: -1) + 1
-                val newList = ShoppingList(name = newListName, orderIndex = newOrderIndex)
-                val newListId = repository.insertShoppingList(newList)
-                    .toInt() // insertShoppingListはLongを返すのでIntに変換
-//                Log.d("Debug","newListid : ${newListId.toString()}")
-                _currentListId.value = newListId // 新しいリストに切り替えある
-//            }catch(e: Exception){
-//                Log.d("Debug",e.message.toString())
-//            }
+            _currentListId.value = repository.createNewListAndSwitchToIt()
         }
     }
 
