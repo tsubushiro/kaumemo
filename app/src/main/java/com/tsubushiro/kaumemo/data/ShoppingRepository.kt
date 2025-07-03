@@ -18,7 +18,9 @@ class ShoppingRepository(
 //    }
 
     suspend fun insertShoppingList(shoppingList: ShoppingList): Long { // ★ここを 'Long' に変更★
-        return shoppingListDao.insert(shoppingList)
+        val newOrderIndex = (shoppingListDao.getLastListOrderIndex() ?: -1) + 1 // 後ろへ詰めるため
+        val orderedShoppingList = shoppingList.copy(orderIndex = newOrderIndex)
+        return shoppingListDao.insert(orderedShoppingList)
     }
 
     suspend fun updateShoppingList(shoppingList: ShoppingList) {
