@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.compose.KaumemoTheme
 import com.google.android.gms.ads.MobileAds
 import com.tsubushiro.kaumemo.ui.AppNavHost
@@ -23,7 +24,16 @@ class MainActivity : ComponentActivity() {
     private val shoppingViewModel: ShoppingViewModel by viewModels() // 両方のViewModelを合成したViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // スプラッシュスクリーンをインストール
+        val splashScreen = installSplashScreen()
+
         super.onCreate(savedInstanceState)
+
+        // ViewModelのisLoadingがtrueの間、スプラッシュスクリーンを表示し続ける
+        splashScreen.setKeepOnScreenCondition {
+            shoppingViewModel.isLoading.value
+        }
+
         Log.d("PerfLog", "MainActivity onCreate Start: ${System.currentTimeMillis()}")
         setContent {
             KaumemoTheme {

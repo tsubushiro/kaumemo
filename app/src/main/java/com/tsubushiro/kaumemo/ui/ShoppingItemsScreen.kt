@@ -1,23 +1,14 @@
 package com.tsubushiro.kaumemo.ui
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -26,18 +17,12 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.ScrollableTabRow
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -47,10 +32,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.tsubushiro.kaumemo.data.ShoppingItem
@@ -95,237 +78,7 @@ fun ShoppingItemsScreen(
         }
     }
 
-    Scaffold(
-//        topBar = {
-//            TopAppBar(
-////                title = { Text(listName) },
-//                title = { Text(shoppingListName) },
-//                navigationIcon = {
-//                    IconButton(onClick = { navController.popBackStack() }) {
-//                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "戻る")
-//                    }
-//                }
-//            )
-//        },
-        topBar = {
-            Column { // TopAppBarとTabRowをまとめるためにColumnを追加
-//                TopAppBar(
-//                    title = { Text(shoppingListName) },
-//                    navigationIcon = {
-//                        IconButton(onClick = { navController.popBackStack() }) { // 戻るボタン
-//                            Icon(Icons.AutoMirrored.Filled.ArrowBack, "戻る")
-//                        }
-//                    },
-//                    actions = {
-//                        IconButton(onClick = { navController.navigate("shopping_lists_route") }) { // ★追加★
-//                            Icon(Icons.AutoMirrored.Filled.List, "リスト管理") // リスト管理画面へのアイコン
-//                        }
-//                    }
-//                )
-                TopAppBar(
-//                    title = { Text(shoppingListName ?: "読み込み中...") },
-//                    title = { Text(currentShoppingList?.name ?: "読み込み中...") },
-                    title = {
-                        Text(
-                            text = if (currentShoppingList == null) {
-                                "読み込み中..."
-                            } else {
-                                "アイテム編集"
-                            }
-                        )
-                            },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        titleContentColor = MaterialTheme.colorScheme.onPrimary
-                    ),
-//                    navigationIcon = {
-//                        IconButton(onClick = { navController.popBackStack() }) {
-//                            Icon(
-//                                Icons.AutoMirrored.Filled.ArrowBack,
-//                                contentDescription = "戻る",
-//                                tint = MaterialTheme.colorScheme.onPrimary
-//                            )
-//                        }
-//                    },
-                    actions = {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            IconButton(onClick = { shoppingItemsViewModel.createNewListAndSwitchToIt() }) {
-                                Icon(
-                                    Icons.Filled.Add,
-                                    contentDescription = "新しいリストを作成",
-                                    tint = MaterialTheme.colorScheme.onPrimary
-                                )
-                            }
-                            Text(
-                                text = "リスト",
-                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.offset(y = (-4).dp) // ここを調整
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(8.dp)) // アイコン間のスペース調整
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            IconButton(onClick = { navController.navigate("shopping_lists_route") }) {
-                                Icon(
-                                    Icons.AutoMirrored.Filled.List,
-                                    contentDescription = "リスト一覧",
-                                    tint = MaterialTheme.colorScheme.onPrimary
-                                )
-                            }
-                            Text(
-                                text = "リスト",
-                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.offset(y = (-4).dp) // ここを調整
-                            )
-                        }
-//                        IconButton(onClick = { shoppingItemsViewModel.createNewListAndSwitchToIt() }) {
-//                            Icon(
-//                                Icons.Filled.Add,
-//                                contentDescription = "新しいリストを作成",
-//                                tint = MaterialTheme.colorScheme.onPrimary
-//                            )
-//                        }
-////                        IconButton(onClick = { showConfirmDeleteListDialog = true }) {
-////                            Icon(
-////                                Icons.Filled.Delete,
-////                                contentDescription = "現在のリストを削除",
-////                                tint = MaterialTheme.colorScheme.onPrimary
-////                            )
-////                        }
-//                        IconButton(onClick = { navController.navigate("shopping_lists_route") }) {
-//                            Icon(
-//                                Icons.AutoMirrored.Filled.List,
-//                                contentDescription = "リスト一覧",
-//                                tint = MaterialTheme.colorScheme.onPrimary
-//                            )
-//                        }
-                    }
-                )
-
-                // ★追加: タブバー（リスト切り替え用）
-                if (shoppingLists.isNotEmpty()) { // リストが一つも無い場合はタブを表示しない
-                    ScrollableTabRow(
-                        selectedTabIndex = selectedTabIndex.coerceAtLeast(0), // インデックスが-1にならないように
-                        containerColor = MaterialTheme.colorScheme.primaryContainer, // タブバー全体の背景色（そのまま）
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer, // 未選択タブのテキスト色など（そのまま）
-                        // ★ここから追加・変更★
-                        edgePadding = 0.dp, // 端のパディングをなくして、タブが左右いっぱいに使えるように（好みで調整）
-                        indicator = {}
-//                         indicator = { tabPositions ->
-//                             TabRowDefaults.SecondaryIndicator(
-//                                 modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex.coerceAtLeast(0)]),
-//                                 color = MaterialTheme.colorScheme.primaryContainer,
-//                             )
-//                         },
-                    ) {
-                        shoppingLists.forEachIndexed { index, shoppingList ->
-                            Tab(
-                                selected = selectedTabIndex == index,
-                                onClick = { shoppingItemsViewModel.updateCurrentListId(shoppingList.id) }, // タブクリックでリストを切り替え
-                                text = {
-                                    Text(
-                                        text = shoppingList.name,
-                                        color = if (selectedTabIndex == index) {
-                                            // ★選択中のタブの文字色 (背景がSecondaryなのでonSecondaryが最適)★
-                                            MaterialTheme.colorScheme.secondary
-                                        } else {
-                                            MaterialTheme.colorScheme.onPrimaryContainer // 非選択のタブの文字色
-                                        }
-                                    )
-                                },
-                                // ★ここを修正: 選択中のタブの背景色を設定★
-                                modifier = if (selectedTabIndex == index) {
-                                    Modifier
-                                        .background(
-                                            color = MaterialTheme.colorScheme.background, // ★選択中のタブの背景色をアプリの背景色に★
-//                                            shape = MaterialTheme.shapes.small // テーマで定義された角の丸みを使用
-                                            // または RoundedCornerShape(8.dp) のように直接指定することも可能
-                                        )
-                                        // 背景色を適用した後に、Tab全体のパディングを調整すると見栄えが良くなります
-                                       // .padding(horizontal = 16.dp, vertical = 8.dp) // 例: タブ内のコンテンツのパディングを調整
-                                } else {
-                                    // 未選択のタブには背景色なし（または別の色を指定）
-//                                    Modifier.padding(horizontal = 16.dp, vertical = 8.dp) // 未選択のタブにも同じパディングを適用して高さを揃える
-                                    Modifier
-                                }
-                            )
-                        }
-                    }
-                }
-            }
-        },
-        floatingActionButton = {
-            FloatingActionButton(onClick = { showAddItemDialog = true }) {
-                Icon(Icons.Filled.Add, "新しいアイテムを追加")
-            }
-        },
-        // ★ ここにbottomBarを追加し、広告Composableを配置 ★
-        bottomBar = {
-            // Spacerなどを使い、広告の下にパディングを入れると見栄えが良くなる
-            Column {
-                AdViewComposable(modifier = Modifier.fillMaxWidth())
-                Spacer(modifier = Modifier.height(16.dp)) // 広告の下に余白
-            }
-        }
-    ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-        ) {
-            if (currentShoppingList == null){
-                item {
-                    Text(
-                        "アイテム読み込み中...",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
-            }else if (shoppingItems.isEmpty()) {
-                item {
-                    Text(
-                        "まだアイテムがありません。\n右下のボタンから新しいアイテムを追加しましょう！",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
-            } else {
-                items(shoppingItems) { item ->
-                    ShoppingItemCard(
-                        shoppingItem = item,
-                        onTogglePurchased = { shoppingItemsViewModel.toggleItemPurchased(it) },
-                        onEditClick = { itemToEdit ->
-                            editingItem = itemToEdit
-                            showEditItemDialog = true
-                        },
-                        // ★ 削除ボタンが押されたら（確認ダイアログ表示） ★
-                        onDeleteClick = { itemToDeleteConfirm ->
-                            itemToDelete = itemToDeleteConfirm
-                            showConfirmDeleteDialog = true
-                        }
-//                        onDeleteClick = { itemToDelete ->
-//                            shoppingItemsViewModel.deleteShoppingItem(itemToDelete)
-//                        }
-                    )
-                }
-            }
-            item {
-                Spacer(modifier = Modifier.height(paddingValues.calculateBottomPadding())) // FABとBottomBarの高さ分を確保
-            }
-        }
-    }
+    Text("てすと！")
 
     // アイテム追加ダイアログ
     if (showAddItemDialog) {

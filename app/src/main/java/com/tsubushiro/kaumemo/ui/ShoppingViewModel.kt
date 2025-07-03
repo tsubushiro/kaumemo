@@ -25,11 +25,19 @@ class ShoppingViewModel @Inject constructor(
     private val repository: ShoppingRepository,
     savedStateHandle: SavedStateHandle // ナビゲーション引数を受け取るため
 ) : ViewModel() {
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     // 現在表示中のリストのIDを管理するStateFlow
     private val _currentListId = MutableStateFlow<Int?>(null)
     val currentListId = _currentListId.asStateFlow()
 
+    init{
+        viewModelScope.launch {
+            currentListId.filterNotNull().first() // nullでなくなるまで
+            _isLoading.value = false // ロード完了
+        }
+    }
     // リスト処理
     /**
      * 指定されたIDと現在のリストの状態に基づいて、最終的に設定すべきリストIDを決定する共通ロジック。
