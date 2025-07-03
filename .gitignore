@@ -17,3 +17,4 @@ local.properties
 /release
 *.bk
 *.back
+*.bak

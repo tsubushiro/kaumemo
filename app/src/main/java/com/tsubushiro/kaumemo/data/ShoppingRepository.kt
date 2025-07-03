@@ -93,7 +93,7 @@ class ShoppingRepository(
     // ViewModel側のcreateNewListをレポジトリ側へ（createDefaultShoppingListIfNeededは不要)
     suspend fun createNewListAndSwitchToIt() :Int{
         val newListName = generateNewShoppingListName()
-        val newOrderIndex = (shoppingListDao.getLastListOrderIndex() ?: -1) + 1
+        val newOrderIndex = (shoppingListDao.getLastListOrderIndex() ?: -1) + 1 // 後ろへ詰めるため
         val defaultList = ShoppingList(name = newListName, orderIndex = newOrderIndex)
         Log.d("PerfLog", "insert newlist Start: ${System.currentTimeMillis()}")
         val id = shoppingListDao.insert(defaultList)

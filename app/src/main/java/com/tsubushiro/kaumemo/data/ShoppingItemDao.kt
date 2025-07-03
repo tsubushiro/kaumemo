@@ -28,7 +28,7 @@ interface ShoppingItemDao {
     @Query("""
         SELECT * FROM shopping_items 
         WHERE listId = :listId 
-        ORDER BY createdAt DESC
+        ORDER BY createdAt ASC
     """)
     fun getShoppingItemsForList(listId: Int): Flow<List<ShoppingItem>>
 

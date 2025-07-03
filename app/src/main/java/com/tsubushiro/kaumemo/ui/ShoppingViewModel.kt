@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
@@ -166,7 +167,18 @@ class ShoppingViewModel @Inject constructor(
     // 新規リスト
     fun createNewListAndSwitchToIt() {
         viewModelScope.launch(Dispatchers.IO) {
-            _currentListId.value = repository.createNewListAndSwitchToIt()
+//            _currentListId.value = repository.createNewListAndSwitchToIt()
+            val newListId = repository.createNewListAndSwitchToIt()
+
+            // 新リストが登録されるまで待つ
+            // ★ここがポイント★
+            // allShoppingLists(StateFlow)に新しいリストが現れるまで待つ
+            shoppingLists
+                .filter { lists -> lists.any { it.id == newListId } }
+                .first() // 新リストが追加されるまでサスペンド
+
+            // 新リストがリストに現れたことを確認してからIDを切り替える
+            _currentListId.value = newListId
         }
     }
 
