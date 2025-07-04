@@ -67,6 +67,7 @@ class ShoppingViewModel @Inject constructor(
             // 1. ShoppingListにデータがない場合: 新規のデータを作成してそのidを返す
             val newDefaultListId = repository.createNewListAndSwitchToIt()
             Log.d("ShoppingItemsViewModel", "DETERMINE: No lists found. Created new default list ID: $newDefaultListId")
+            _toastMessage.emit("リストがないため「新規リスト」を作成しました")
             newDefaultListId
         } else {
             // preferredListIdが指定されており、かつそのIDのリストが存在するか確認
