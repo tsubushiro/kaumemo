@@ -1,5 +1,6 @@
 package com.tsubushiro.kaumemo.ui
 
+import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -47,6 +48,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -54,6 +56,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.tsubushiro.kaumemo.data.ShoppingItem
+import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,9 +80,6 @@ fun ShoppingItemsScreen(
 //    val currentListId by shoppingItemsViewModel.currentListId.collectAsState() // ★追加★
 
     // 現在選択されているタブのインデックスを見つける
-//    val selectedTabIndex = remember(currentListId, shoppingLists) {
-//        shoppingLists.indexOfFirst { it.id == currentListId }
-//    }
     val selectedTabIndex = remember(currentShoppingList?.id, shoppingLists) {
         shoppingLists.indexOfFirst { it.id == currentShoppingList?.id }
     }
@@ -92,6 +92,16 @@ fun ShoppingItemsScreen(
             if (nonNullListId != currentShoppingList?.id) {
                 shoppingItemsViewModel.updateCurrentListId(nonNullListId)
             }
+        }
+    }
+
+
+    val context = LocalContext.current // ★追加: Contextを取得
+
+    // ★追加: トーストメッセージを監視し表示するLaunchedEffect
+    LaunchedEffect(Unit) {
+        shoppingItemsViewModel.toastMessage.collectLatest { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         }
     }
 

@@ -2,6 +2,7 @@ package com.tsubushiro.kaumemo.di
 
 import android.content.Context
 import androidx.room.Room
+import com.tsubushiro.kaumemo.common.AppContextProvider
 import com.tsubushiro.kaumemo.data.AppDatabase
 import com.tsubushiro.kaumemo.data.ShoppingItemDao
 import com.tsubushiro.kaumemo.data.ShoppingListDao
@@ -46,4 +47,10 @@ object AppModule {
     ): ShoppingRepository {
         return ShoppingRepository(shoppingListDao, shoppingItemDao)
     }
+
+    @Provides
+    @Singleton
+    fun provideAppContextProvider(
+        @ApplicationContext context: Context
+    ): AppContextProvider = AppContextProvider(context)
 }

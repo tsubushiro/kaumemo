@@ -4,14 +4,18 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tsubushiro.kaumemo.common.AppContextProvider
 import com.tsubushiro.kaumemo.data.ShoppingItem
 import com.tsubushiro.kaumemo.data.ShoppingList
 import com.tsubushiro.kaumemo.data.ShoppingRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
@@ -24,8 +28,15 @@ import javax.inject.Inject
 @HiltViewModel
 class ShoppingViewModel @Inject constructor(
     private val repository: ShoppingRepository,
-    savedStateHandle: SavedStateHandle // ナビゲーション引数を受け取るため
+    savedStateHandle: SavedStateHandle, // ナビゲーション引数を受け取るため
+    private val appContextProvider: AppContextProvider // アプリの共通情報
 ) : ViewModel() {
+
+    // トーストの実装
+    private val _toastMessage = MutableSharedFlow<String>()
+    val toastMessage: SharedFlow<String> = _toastMessage.asSharedFlow()
+
+    // 初期ローディング中 (スプラッシュスクリーンのため)
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
@@ -35,8 +46,10 @@ class ShoppingViewModel @Inject constructor(
 
     init{
         viewModelScope.launch {
-            currentListId.filterNotNull().first() // nullでなくなるまで
+            currentListId.filterNotNull().first() // nullでなくなるまで待機
             _isLoading.value = false // ロード完了
+            val appName = appContextProvider.getAppName()
+            _toastMessage.emit("ようこそ、${appName}へ！")
         }
     }
     // リスト処理

@@ -2,6 +2,7 @@ package com.tsubushiro.kaumemo.ui
 
 
 //import androidx.compose.material.icons.filled.SwapVert
+import android.widget.Toast
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -39,6 +40,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -49,12 +51,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.tsubushiro.kaumemo.data.ShoppingList
+import kotlinx.coroutines.flow.collectLatest
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorderAfterLongPress
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
@@ -85,6 +89,15 @@ fun ShoppingListsScreen(
     var deletingList by remember { mutableStateOf<ShoppingList?>(null) } // 削除対象のリストを保持
 
     val currentListId by shoppingListsViewModel.currentListId.collectAsState() // ★追加★
+
+    val context = LocalContext.current // ★追加: Contextを取得
+
+    // ★追加: トーストメッセージを監視し表示するLaunchedEffect
+    LaunchedEffect(Unit) {
+        shoppingListsViewModel.toastMessage.collectLatest { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     // ★Compose-Reorderableの状態を管理するState★
     val haptic = LocalHapticFeedback.current // 触覚フィードバック
