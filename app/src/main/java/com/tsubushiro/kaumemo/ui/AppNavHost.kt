@@ -2,12 +2,15 @@ package com.tsubushiro.kaumemo.ui
 
 import android.util.Log
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.tsubushiro.kaumemo.common.AppContextProviderEntryPoint
+import dagger.hilt.android.EntryPointAccessors
 
 @Composable
 fun AppNavHost(
@@ -30,7 +33,7 @@ fun AppNavHost(
 //    if (initialListId != null) {
         Log.d("PerfLog", "AppNavHost NavHost construction Start: ${System.currentTimeMillis()}")
         //        NavHost(navController = navController, startDestination = "shopping_items_route/{${initialListId}}") { // ダミーのスタートデスティネーション
-        NavHost(navController = navController, startDestination = "shopping_items_route/{listId}") { // ダミーのスタートデスティネーション
+        NavHost(navController = navController, startDestination = "initialScreen") { // ダミーのスタートデスティネーション
             composable(
                 "shopping_items_route/{listId}",
                 arguments = listOf(navArgument("listId") { type = NavType.IntType })
@@ -42,12 +45,31 @@ fun AppNavHost(
                     shoppingItemsViewModel = shoppingItemsViewModel
                 )
             }
-
             composable("shopping_lists_route") {
                 ShoppingListsScreen(navController = navController ,
                     shoppingListsViewModel= shoppingListsViewModel
                 )
             }
+            // 初期画面
+            composable("initialScreen") { backStackEntry ->
+                // ApplicationContextを取得
+                val context = LocalContext.current.applicationContext
+
+                // EntryPointからAppContextProviderを取得
+                val appContextProvider = EntryPointAccessors.fromApplication(
+                    context,
+                    AppContextProviderEntryPoint::class.java
+                ).appContextProvider()
+
+                // sharedpreferences に保存した現在表示中のリストのIDを取得
+                val listId = appContextProvider.currentListId
+                ShoppingItemsScreen(
+                    navController = navController,
+                    listId = listId,
+                    shoppingItemsViewModel = shoppingItemsViewModel
+                )
+            }
+
 
             // ... 他のルート
         }

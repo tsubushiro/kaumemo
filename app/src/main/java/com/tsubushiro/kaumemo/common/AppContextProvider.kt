@@ -23,19 +23,19 @@ class AppContextProvider(private val context: Context) {
     }
 
     // 買い物リスト
-    var currentListId: Int?
+    var currentListId: Int
         get() {
-            val value = prefs.getInt("current_list_id", 0)
-            return if (value == 0) null else value
+            return prefs.getInt("current_list_id", 0)
         }
         set(value) {
-            prefs.edit() { putInt("current_list_id", value ?: 0) }
+            prefs.edit() { putInt("current_list_id", value) }
         }
 }
 
 // EntryPointインターフェースの作成
 // Hiltは@Composable関数で直接@Injectインスタンスを受け取れないため、
 // EntryPointAccessorを使ってApplicationContextから取得できます。
+// AppNavHostでAppContentProvider使う準備
 @EntryPoint
 @InstallIn(SingletonComponent::class)
 interface AppContextProviderEntryPoint {

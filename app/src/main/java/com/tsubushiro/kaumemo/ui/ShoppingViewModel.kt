@@ -105,7 +105,11 @@ class ShoppingViewModel @Inject constructor(
             val resolvedId = determineAndSetInitialListId(incomingListId)
             _currentListId.value = resolvedId
             Log.d("ShoppingItemsViewModel", "RESOLVE: Set current list ID to resolved ID: $resolvedId (from incoming: $incomingListId)")
-            // ★ ローディング状態を考慮する場合はここに_isLoadingNewList.value = falseを追加 ★
+
+            // SharedPreferencesを使って現在の表示中のIDを保存
+            _currentListId.value?.let {
+                appContextProvider.currentListId = it.toInt()
+            }
         }
     }
 
