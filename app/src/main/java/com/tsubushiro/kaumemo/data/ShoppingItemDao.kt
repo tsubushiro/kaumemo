@@ -34,4 +34,10 @@ interface ShoppingItemDao {
 
     @Query("SELECT * FROM shopping_items WHERE id = :itemId")
     suspend fun getShoppingItemById(itemId: Int): ShoppingItem? // 特定IDのアイテムを取得
+
+    @Query("SELECT * FROM shopping_Items WHERE listId = :listId ORDER BY orderIndex ASC, createdAt DESC") // orderIndexを優先、次に作成日時でソート
+    fun getAllShoppingItemsOrderByOrderIndex(listId:Int): Flow<List<ShoppingItem>>
+
+    @Query("SELECT MAX(orderIndex) FROM shopping_Items WHERE listId = :listId")
+    suspend fun getLastItemOrderIndex(listId:Int): Int? // suspendにする (Flowではなく一度きりの取得のため)
 }

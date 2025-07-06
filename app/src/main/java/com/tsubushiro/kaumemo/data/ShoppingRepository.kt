@@ -40,8 +40,16 @@ class ShoppingRepository(
         return shoppingItemDao.getShoppingItemsForList(listId)
     }
 
+//    suspend fun insertShoppingItem(shoppingItem: ShoppingItem) {
+//        shoppingItemDao.insert(shoppingItem)
+//    }
+
+    // ソートの実装
     suspend fun insertShoppingItem(shoppingItem: ShoppingItem) {
-        shoppingItemDao.insert(shoppingItem)
+        val listId = shoppingItem.listId
+        val newOrderIndex = (shoppingItemDao.getLastItemOrderIndex(listId) ?: -1) + 1 // 後ろへ詰めるため
+        val orderedShoppingItem = shoppingItem.copy(orderIndex = newOrderIndex)
+        shoppingItemDao.insert(orderedShoppingItem)
     }
 
     suspend fun updateShoppingItem(shoppingItem: ShoppingItem) {
@@ -59,6 +67,11 @@ class ShoppingRepository(
     // ShoppingListDao の新しいソート済み取得メソッドをラップ。
     fun getAllShoppingListsSorted(): Flow<List<ShoppingList>> {
         return shoppingListDao.getAllShoppingListsOrderByOrderIndex()
+    }
+
+    // ShpppingItemDao の新しいソート済み取得メソッドをラップ(上記のItem版)。
+    fun getAllShoppingItemsSorted(listId:Int): Flow<List<ShoppingItem>> {
+        return shoppingItemDao.getAllShoppingItemsOrderByOrderIndex(listId)
     }
 
     // 初期リスト作成ロロジック。

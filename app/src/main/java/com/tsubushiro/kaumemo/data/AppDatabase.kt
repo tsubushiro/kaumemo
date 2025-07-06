@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 
 @Database(
     entities = [ShoppingList::class, ShoppingItem::class], // エンティティを登録
-    version = 2, // データベースバージョン ToDo: 本番1にもどす
+    version = 3, // データベースバージョン ToDo: 本番1にもどす
     exportSchema = false // スキーマをファイルにエクスポートしない (今回は不要)
 )
 abstract class AppDatabase : RoomDatabase() {

@@ -21,5 +21,6 @@ data class ShoppingItem(
     val listId: Int, // 所属するShoppingListのID (外部キー)
     val name: String,
     val isPurchased: Boolean = false, // 購入済みかどうか
-    val createdAt: Long = Instant.now().toEpochMilli() // 作成日時
+    val createdAt: Long = Instant.now().toEpochMilli(), // 作成日時
+    val orderIndex: Int = 0 // ★追加★
 )
