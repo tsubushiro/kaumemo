@@ -144,8 +144,8 @@ class ShoppingViewModel @Inject constructor(
                 val newItem = ShoppingItem(listId = currentListIdValue, name = name) // ★ここを修正★
                 repository.insertShoppingItem(newItem)
                 // アイテム追加成功時にスナックバーメッセージを送信
-                _snackbarMessage.emit("${newItem.name}を追加しました！")
-                _toastMessage.emit("${newItem.name}を追加しました！")
+//                _snackbarMessage.emit("${newItem.name}を追加しました！")
+//                _toastMessage.emit("${newItem.name}を追加しました！")
             } else {
                 // エラーハンドリング: リストIDがまだ設定されていない場合
                 // 例: Log.e("ShoppingItemsViewModel", "Cannot add item: currentListId is null")
