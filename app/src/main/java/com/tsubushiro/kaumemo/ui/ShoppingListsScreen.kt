@@ -114,6 +114,15 @@ fun ShoppingListsScreen(
         }
     )
 
+    // ★追加: リストの変更を監視し、新規追加時にスクロール★
+    LaunchedEffect(shoppingLists.size, shoppingLists.lastOrNull()?.id) { // lastOrNull()?.id は念のため。純粋な追加ならsizeだけで十分
+        if (shoppingLists.isNotEmpty()) {
+            val lastIndex = shoppingLists.lastIndex
+            // UI更新のレンダリングが完了するまで少し待つ
+            state.listState.animateScrollToItem(lastIndex)
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
