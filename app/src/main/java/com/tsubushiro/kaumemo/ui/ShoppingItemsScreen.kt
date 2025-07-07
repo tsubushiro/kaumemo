@@ -37,6 +37,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -48,6 +50,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,6 +67,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.tsubushiro.kaumemo.data.ShoppingItem
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorderAfterLongPress
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
@@ -105,7 +109,17 @@ fun ShoppingItemsScreen(
             }
         }
     }
+    val snackbarHostState = remember { SnackbarHostState() } // ★スナックバーホストの状態を記憶★
+    val scope = rememberCoroutineScope() // スナックバー表示のためのコルーチンスコープ
 
+    // ViewModelからのスナックバーメッセージを監視
+    LaunchedEffect(Unit) {
+        shoppingItemsViewModel.snackbarMessage.collectLatest { message ->
+            scope.launch { // コルーチン内でスナックバーを表示
+                snackbarHostState.showSnackbar(message)
+            }
+        }
+    }
 
     val context = LocalContext.current // ★追加: Contextを取得
 
@@ -297,6 +311,7 @@ fun ShoppingItemsScreen(
                 }
             }
         },
+        snackbarHost = { SnackbarHost(snackbarHostState) }, // ★ScaffoldにSnackbarHostを設定★
         floatingActionButton = {
             FloatingActionButton(onClick = { showAddItemDialog = true }) {
                 Icon(Icons.Filled.Add, "新しいアイテムを追加")
@@ -408,9 +423,11 @@ fun ShoppingItemsScreen(
     // アイテム追加ダイアログ
     if (showAddItemDialog) {
         AddItemDialog(
-            onAddItem = { itemName ->
+            onAddItem = { itemName, isContinuous -> // isContinuous を受け取るように変更
                 shoppingItemsViewModel.addShoppingItem(itemName)
-                showAddItemDialog = false
+                if (!isContinuous) { // 連続入力モードでなければダイアログを閉じる
+                    showAddItemDialog = false
+                }
             },
             onDismiss = { showAddItemDialog = false }
         )
@@ -502,28 +519,65 @@ fun ShoppingItemCard(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddItemDialog(
-    onAddItem: (String) -> Unit,
+    onAddItem: (String , Boolean) -> Unit,
     onDismiss: () -> Unit
 ) {
     var itemName by remember { mutableStateOf("") }
+    var isContinuousMode by remember { mutableStateOf(false) } // ★連続入力モードの状態★
+    var showConfirmationMessage by remember { mutableStateOf(false) }
+    var lastAddedItemName by remember { mutableStateOf("") } // ★新たに追加: 最後に追加したアイテム名を保持★
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("新しいアイテムを追加") },
         text = {
-            OutlinedTextField(
-                value = itemName,
-                onValueChange = { itemName = it },
-                label = { Text("アイテム名") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
+            Column {
+                OutlinedTextField(
+                    value = itemName,
+                    onValueChange = { itemName = it },
+                    label = { Text("アイテム名") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                // 「連続入力」チェックボックスをここに追加
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.End // 右寄せ
+                ) {
+                    // ★追加通知メッセージ★
+                    if (showConfirmationMessage) {
+                        // ★メッセージを「〇〇を追加しました！」に変更★
+                        Text(
+                            text = "「${lastAddedItemName}」を追加しました！",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary,
+//                            modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 4.dp)
+                        )
+                        // 短時間でメッセージを消す
+                        LaunchedEffect(lastAddedItemName) { // キーをlastAddedItemNameに変更 (メッセージ表示ごとにリコンポーズ)
+                            kotlinx.coroutines.delay(1500) // 1.5秒表示
+                            showConfirmationMessage = false
+                        }
+                    }
+                    Checkbox(
+                        checked = isContinuousMode,
+                        onCheckedChange = { isContinuousMode = it }
+                    )
+                    Text("連続入力") // テキストを「連続入力」に短縮
+
+                }
+            }
         },
         confirmButton = {
             Button(
                 onClick = {
                     if (itemName.isNotBlank()) {
-                        onAddItem(itemName)
+                        onAddItem(itemName, isContinuousMode) // ★isContinuousMode を渡す★
+                        lastAddedItemName = itemName // ★追加: 追加するアイテム名を保存★
+                        itemName = "" // テキストフィールドをクリア
+                        showConfirmationMessage = true // メッセージ表示をトリガー
                     }
                 }
             ) {

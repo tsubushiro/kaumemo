@@ -44,6 +44,10 @@ class ShoppingViewModel @Inject constructor(
     private val _currentListId = MutableStateFlow<Int?>(null)
     val currentListId = _currentListId.asStateFlow()
 
+    // スナックバーメッセージ用のSharedFlow
+    private val _snackbarMessage = MutableSharedFlow<String>()
+    val snackbarMessage = _snackbarMessage.asSharedFlow()
+
     init{
         viewModelScope.launch {
             currentListId.filterNotNull().first() // nullでなくなるまで待機
@@ -139,6 +143,9 @@ class ShoppingViewModel @Inject constructor(
             if (currentListIdValue != null) { // IDがnullでないことを確認
                 val newItem = ShoppingItem(listId = currentListIdValue, name = name) // ★ここを修正★
                 repository.insertShoppingItem(newItem)
+                // アイテム追加成功時にスナックバーメッセージを送信
+                _snackbarMessage.emit("${newItem.name}を追加しました！")
+                _toastMessage.emit("${newItem.name}を追加しました！")
             } else {
                 // エラーハンドリング: リストIDがまだ設定されていない場合
                 // 例: Log.e("ShoppingItemsViewModel", "Cannot add item: currentListId is null")
