@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.tsubushiro.kaumemo.data.ShoppingList
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorderAfterLongPress
@@ -114,12 +115,14 @@ fun ShoppingListsScreen(
         }
     )
 
-    // ★追加: リストの変更を監視し、新規追加時にスクロール★
-    LaunchedEffect(shoppingLists.size, shoppingLists.lastOrNull()?.id) { // lastOrNull()?.id は念のため。純粋な追加ならsizeだけで十分
-        if (shoppingLists.isNotEmpty()) {
-            val lastIndex = shoppingLists.lastIndex
-            // UI更新のレンダリングが完了するまで少し待つ
-            state.listState.animateScrollToItem(lastIndex)
+    // ★追加: アイテム追加イベントを監視し、最新行にスクロール★
+    LaunchedEffect(Unit) { // このLaunchedEffectはコンポーネントのライフサイクルに一度だけ起動
+        shoppingListsViewModel.scrollEvent.collectLatest {
+            // アイテムが追加された後、リストが更新されるまで少し待つ
+            delay(50) // UIレンダリングのラグを考慮
+            if (shoppingLists.isNotEmpty()) {
+                state.listState.animateScrollToItem(shoppingLists.lastIndex)
+            }
         }
     }
 
