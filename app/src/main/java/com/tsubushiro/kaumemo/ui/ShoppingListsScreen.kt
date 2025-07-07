@@ -186,6 +186,13 @@ fun ShoppingListsScreen(
                         val alpha = animateFloatAsState(if (isDragging) 0.5f else 1f, label = "alphaAnimation").value
                         val scale = animateFloatAsState(if (isDragging) 1.05f else 1f, label = "scaleAnimation").value
 
+                        LaunchedEffect(isDragging) {
+                            if (isDragging) {
+                                // ドラッグ開始の振動
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress) // 長押し相当のフィードバック
+                            }
+                        }
+
                         ShoppingListCard( // ★ShoppingListCard Composableを呼び出す★
                             shoppingList = shoppingList,
                             onListClick = {

@@ -1,9 +1,11 @@
 package com.tsubushiro.kaumemo.ui
 
 import android.widget.Toast
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,7 +17,8 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
@@ -48,7 +51,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -57,6 +64,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.tsubushiro.kaumemo.data.ShoppingItem
 import kotlinx.coroutines.flow.collectLatest
+import org.burnoutcrew.reorderable.ReorderableItem
+import org.burnoutcrew.reorderable.detectReorderAfterLongPress
+import org.burnoutcrew.reorderable.rememberReorderableLazyListState
+import org.burnoutcrew.reorderable.reorderable
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -104,6 +115,21 @@ fun ShoppingItemsScreen(
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         }
     }
+
+    // Listで使っている版
+    val haptic = LocalHapticFeedback.current // 触覚フィードバック
+    val state = rememberReorderableLazyListState(
+        onMove = { from, to ->
+            // ViewModelの並び替えメソッドを呼び出す
+//           Log.d("ShoppingItemScreen","よんだ？_onMove")
+            shoppingItemsViewModel.onItemReordered(from.index, to.index)
+        },
+        onDragEnd = { start, end ->
+            // ドラッグ終了時に触覚フィードバック
+//            Log.d("ShoppingItemScreen","よんだ？_onDragEnd")
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        }
+    )
 
     Scaffold(
 //        topBar = {
@@ -286,10 +312,12 @@ fun ShoppingItemsScreen(
         }
     ) { paddingValues ->
         LazyColumn(
+            state = state.listState, // ReorderableLazyListStateからLazyListStateを取得
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(horizontal = 16.dp, vertical = 8.dp)
+                .reorderable(state) // reorderable修飾子を適
         ) {
             if (currentShoppingList == null){
                 item {
@@ -312,24 +340,64 @@ fun ShoppingItemsScreen(
                     )
                 }
             } else {
-                items(shoppingItems) { item ->
-                    ShoppingItemCard(
-                        shoppingItem = item,
-                        onTogglePurchased = { shoppingItemsViewModel.toggleItemPurchased(it) },
-                        onEditClick = { itemToEdit ->
-                            editingItem = itemToEdit
-                            showEditItemDialog = true
-                        },
-                        // ★ 削除ボタンが押されたら（確認ダイアログ表示） ★
-                        onDeleteClick = { itemToDeleteConfirm ->
-                            itemToDelete = itemToDeleteConfirm
-                            showConfirmDeleteDialog = true
+                itemsIndexed(shoppingItems, key = { _, item -> item.id }) { index, shoppingItem ->
+                    ReorderableItem(state, key = shoppingItem.id) { isDragging ->
+                        val elevation = animateDpAsState(if (isDragging) 16.dp else 0.dp, label = "elevationAnimation").value
+                        val alpha = animateFloatAsState(if (isDragging) 0.5f else 1f, label = "alphaAnimation").value
+                        val scale = animateFloatAsState(if (isDragging) 1.05f else 1f, label = "scaleAnimation").value
+
+                        LaunchedEffect(isDragging) {
+                            if (isDragging) {
+//                                Log.d("DragDebug", "ドラッグ開始: アイテム名 = ${shoppingItem.name}, ID = ${shoppingItem.id}")
+                                // ドラッグ開始の振動
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress) // 長押し相当のフィードバック
+                            } else {
+                                // ドラッグ終了時（ドロップまたはキャンセル）にもログが出ます
+//                                Log.d("DragDebug", "ドラッグ終了: アイテム名 = ${shoppingItem.name}, ID = ${shoppingItem.id}")
+                            }
                         }
-//                        onDeleteClick = { itemToDelete ->
-//                            shoppingItemsViewModel.deleteShoppingItem(itemToDelete)
-//                        }
-                    )
+
+                        ShoppingItemCard( // ★ShoppingItemCard Composableを呼び出す★
+                            shoppingItem = shoppingItem,
+                            onTogglePurchased = { shoppingItemsViewModel.toggleItemPurchased(it) },
+                            onEditClick = { itemToEdit ->
+                                editingItem = itemToEdit
+                                showEditItemDialog = true
+                            },
+                            onDeleteClick = { itemToDeleteConfirm ->
+                                itemToDelete = itemToDeleteConfirm
+                                showConfirmDeleteDialog = true
+                            },
+                            modifier = Modifier
+                                .graphicsLayer { // ドラッグ時の視覚効果
+                                    scaleX = scale
+                                    scaleY = scale
+                                    this.alpha = alpha
+                                }
+                                .shadow(elevation, RoundedCornerShape(8.dp)) // マテリアルデザインの影
+                                .detectReorderAfterLongPress(state) // ★ドラッグ開始のジェスチャーをここに適用★
+                        )
+                    }
                 }
+//                 ドラッグアンドドロップによるソート対応前
+//                items(shoppingItems) { item ->
+//                    ShoppingItemCard(
+//                        shoppingItem = item,
+//                        onTogglePurchased = { shoppingItemsViewModel.toggleItemPurchased(it) },
+//                        onEditClick = { itemToEdit ->
+//                            editingItem = itemToEdit
+//                            showEditItemDialog = true
+//                        },
+//                        // ★ 削除ボタンが押されたら（確認ダイアログ表示） ★
+//                        onDeleteClick = { itemToDeleteConfirm ->
+//                            itemToDelete = itemToDeleteConfirm
+//                            showConfirmDeleteDialog = true
+//                        }
+////                        onDeleteClick = { itemToDelete ->
+////                            shoppingItemsViewModel.deleteShoppingItem(itemToDelete)
+////                        }
+//                    )
+//                }
             }
             item {
                 Spacer(modifier = Modifier.height(paddingValues.calculateBottomPadding())) // FABとBottomBarの高さ分を確保
@@ -388,23 +456,21 @@ fun ShoppingItemCard(
     shoppingItem: ShoppingItem,
     onTogglePurchased: (ShoppingItem) -> Unit,
     onEditClick: (ShoppingItem) -> Unit,
-    onDeleteClick: (ShoppingItem) -> Unit
+    onDeleteClick: (ShoppingItem) -> Unit,
+    modifier: Modifier // 外側から渡される修飾子
 ) {
     Card(
-        modifier = Modifier
+        modifier = modifier // 外側から渡されるModifierを適用
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .combinedClickable( // 長押し対応
-//                onClick = { onTogglePurchased(shoppingItem) }, // タップでチェック切り替え
-//                onLongClick = { onEditClick(shoppingItem) } // 長押しで編集（簡易）
-                onClick = { onEditClick(shoppingItem) }, // タップでチェック切り替え
-            ),
+            .padding(vertical = 4.dp),
+//          .clickable{ onEditClick(shoppingItem) },
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(4.dp),
+                .padding(4.dp)
+                .clickable { onEditClick(shoppingItem) },
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
