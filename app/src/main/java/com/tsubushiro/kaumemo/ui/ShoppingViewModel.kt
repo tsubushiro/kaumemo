@@ -118,7 +118,8 @@ class ShoppingViewModel @Inject constructor(
     val shoppingItems: StateFlow<List<ShoppingItem>> =
         _currentListId.filterNotNull() // nullが流れてくることを防ぐ
             .flatMapLatest { listId -> // listIdの変更を監視し、その都度アイテムを取得
-                repository.getShoppingItemsForList(listId)
+//                repository.getShoppingItemsForList(listId)
+                repository.getAllShoppingItemsSorted(listId) // orderIndex順にソート
             }
             .stateIn(
                 scope = viewModelScope,
@@ -180,6 +181,33 @@ class ShoppingViewModel @Inject constructor(
         }
     }
 
+    // アイテムの並び替えロジック★
+    fun onItemReordered(fromIndex: Int, toIndex: Int) {
+        // 1. 現在のリストの状態をミュータブルなリストにコピー
+        val currentItem = shoppingItems.value.toMutableList()
+
+        // 2. インデックスの有効性チェック
+        if (fromIndex < 0 || fromIndex >= currentItem.size ||
+            toIndex < 0 || toIndex >= currentItem.size) {
+            return // 無効なインデックスの場合は何もしない
+        }
+
+        // 3. 移動するアイテムをリストから削除し、新しい位置に挿入
+        val movedItem = currentItem.removeAt(fromIndex) // 元の位置からアイテムを削除
+        currentItem.add(toIndex, movedItem) // 新しい位置にアイテムを挿入
+
+        // 4. 全てのアイテムに新しい orderIndex を割り当て
+        // 現在のリストの新しい表示順に基づき、0から連番でorderIndexを振り直す
+        val updatedItems = currentItem.mapIndexed { index, list ->
+            list.copy(orderIndex = index) // 各リストのコピーを作成し、そのorderIndexを現在のインデックスに設定
+        }
+
+        // 5. データベースの更新
+        // ViewModelScopeを使ってコルーチンを起動し、IOディスパッチャでDB操作を行う
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.updateShoppingItemOrder(updatedItems) // リポジトリを通じて永続化
+        }
+    }
 
     // リスト処理
     // 新規リスト

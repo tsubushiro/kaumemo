@@ -141,4 +141,11 @@ class ShoppingRepository(
             shoppingListDao.update(list)
         }
     }
+
+    // 上のItem版 orderIndexの更新
+    suspend fun updateShoppingItemOrder(lists: List<ShoppingItem>) {
+        lists.forEach { list ->
+            shoppingItemDao.update(list)
+        }
+    }
 }
