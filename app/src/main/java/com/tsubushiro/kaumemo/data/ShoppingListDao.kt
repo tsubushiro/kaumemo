@@ -19,8 +19,8 @@ interface ShoppingListDao {
     @Delete
     suspend fun delete(shoppingList: ShoppingList) // リストの削除
 
-    @Query("SELECT * FROM shopping_lists ORDER BY createdAt DESC")
-    fun getAllShoppingLists(): Flow<List<ShoppingList>> // 全てのリストを日付降順で取得、Flowで変更を監視
+//    @Query("SELECT * FROM shopping_lists ORDER BY createdAt DESC")
+//    fun getAllShoppingLists(): Flow<List<ShoppingList>> // 全てのリストを日付降順で取得、Flowで変更を監視
 
 //    @Query("SELECT * FROM shopping_lists WHERE id = :listId")
 //    suspend fun getShoppingListById(listId: Int): ShoppingList? // 特定IDのリストを取得
@@ -40,4 +40,8 @@ interface ShoppingListDao {
     // 連番リスト名生成のために、指定された名前で始まるリストの数をカウント。
     @Query("SELECT COUNT(*) FROM shopping_lists WHERE name LIKE :name || '%'") // "買い物リスト%"のようなパターンにマッチ
     suspend fun getListNameCount(name: String): Int // suspendにする
+
+    // 1 件でもあればTrue
+    @Query("SELECT EXISTS(SELECT 1 FROM shopping_lists)")
+    suspend fun hasAnyShoppingLists(): Boolean
 }

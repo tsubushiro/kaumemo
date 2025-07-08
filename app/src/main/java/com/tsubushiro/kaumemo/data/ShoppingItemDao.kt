@@ -25,12 +25,12 @@ interface ShoppingItemDao {
 //        WHERE listId = :listId
 //        ORDER BY isPurchased ASC, createdAt DESC
 //    """)
-    @Query("""
-        SELECT * FROM shopping_items 
-        WHERE listId = :listId 
-        ORDER BY createdAt ASC
-    """)
-    fun getShoppingItemsForList(listId: Int): Flow<List<ShoppingItem>>
+//    @Query("""
+//        SELECT * FROM shopping_items
+//        WHERE listId = :listId
+//        ORDER BY createdAt ASC
+//    """)
+//    fun getShoppingItemsForList(listId: Int): Flow<List<ShoppingItem>>
 
     @Query("SELECT * FROM shopping_items WHERE id = :itemId")
     suspend fun getShoppingItemById(itemId: Int): ShoppingItem? // 特定IDのアイテムを取得

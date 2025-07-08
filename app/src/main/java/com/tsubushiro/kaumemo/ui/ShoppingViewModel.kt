@@ -54,10 +54,10 @@ class ShoppingViewModel @Inject constructor(
 
     init{
         viewModelScope.launch {
+            val appName = appContextProvider.getAppName() // アプリ名取得
             Log.d("PerfLog", "ShoppingViewModel init Start: ${System.currentTimeMillis()}")
             currentListId.filterNotNull().first() // nullでなくなるまで待機
             _isLoading.value = false // ロード完了
-            val appName = appContextProvider.getAppName()
             _toastMessage.emit("ようこそ、${appName}へ！")
             Log.d("PerfLog", "ShoppingViewModel init End: ${System.currentTimeMillis()}")
         }
@@ -72,17 +72,21 @@ class ShoppingViewModel @Inject constructor(
      */
     private suspend fun determineAndSetInitialListId(preferredListId: Int?): Int {
         Log.d("PerfLog", "determineAndSetInitialListId onCreate Start: ${System.currentTimeMillis()}")
-        val allExistingLists = repository.getAllShoppingListsSorted().first() // 最新のリストデータを取得
-
-         return if (allExistingLists.isEmpty()) {
+//      val allExistingLists = repository.getAllShoppingListsSorted().first() // 最新のリストデータを取得
+//      リストが1件以上存在するかを確認したいので
+        val isEmpty = repository.hasAnyShoppingLists().not()
+//        return if (allExistingLists.isEmpty()) {
+         return if (isEmpty) {
              // 1. ShoppingListにデータがない場合: 新規のデータを作成してそのidを返す
+             _toastMessage.emit("リストがないため「新規リスト」を作成します")
             val newDefaultListId = repository.createNewListAndSwitchToIt()
             Log.d("ShoppingItemsViewModel", "DETERMINE: No lists found. Created new default list ID: $newDefaultListId")
              Log.d("PerfLog", "determineAndSetInitialListId p1: ${System.currentTimeMillis()}")
              _toastMessage.emit("リストがないため「新規リスト」を作成しました")
             newDefaultListId
         } else {
-            // preferredListIdが指定されており、かつそのIDのリストが存在するか確認
+             val allExistingLists = repository.getAllShoppingListsSorted().first() // 最新のリストデータを取得
+             // preferredListIdが指定されており、かつそのIDのリストが存在するか確認
             val targetListExists = preferredListId != null && allExistingLists.any { it.id == preferredListId }
 
             if (targetListExists) {
@@ -113,7 +117,7 @@ class ShoppingViewModel @Inject constructor(
 
             // 現在のViewModelの状態が既に最新であれば何もしない
             if (_currentListId.value == incomingListId) {
-                val allExistingLists = repository.getAllShoppingListsSorted().first() // 最新のリストデータを取得
+//                val allExistingLists = repository.getAllShoppingListsSorted().first() // 最新のリストデータを取得
                 Log.d("ShoppingItemsViewModel", "RESOLVE: Already on list ID: $incomingListId. No change needed.")
                 return@launch
             }
@@ -124,9 +128,12 @@ class ShoppingViewModel @Inject constructor(
             Log.d("ShoppingItemsViewModel", "RESOLVE: Set current list ID to resolved ID: $resolvedId (from incoming: $incomingListId)")
 
             // SharedPreferencesを使って現在の表示中のIDを保存
-            _currentListId.value?.let {
-                appContextProvider.currentListId = it.toInt()
-            }
+//            _currentListId.value?.let {
+//                appContextProvider.currentListId = it.toInt()
+//            }
+            // resolvedIdは正しいIDなので
+            appContextProvider.currentListId = resolvedId
+
             Log.d("PerfLog", "resolveAndSetCurrentListId end: ${System.currentTimeMillis()}")
         }
     }

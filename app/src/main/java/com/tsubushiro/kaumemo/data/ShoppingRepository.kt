@@ -9,9 +9,9 @@ class ShoppingRepository(
     private val shoppingItemDao: ShoppingItemDao
 ) {
     // --- ShoppingList関連の操作 ---
-    fun getAllShoppingLists(): Flow<List<ShoppingList>> {
-        return shoppingListDao.getAllShoppingLists()
-    }
+//    fun getAllShoppingLists(): Flow<List<ShoppingList>> {
+//        return shoppingListDao.getAllShoppingLists()
+//    }
 
 //    suspend fun insertShoppingList(shoppingList: ShoppingList):Long {
 //        shoppingListDao.insert(shoppingList)
@@ -36,9 +36,9 @@ class ShoppingRepository(
     }
 
     // --- ShoppingItem関連の操作 ---
-    fun getShoppingItemsForList(listId: Int): Flow<List<ShoppingItem>> {
-        return shoppingItemDao.getShoppingItemsForList(listId)
-    }
+//    fun getShoppingItemsForList(listId: Int): Flow<List<ShoppingItem>> {
+//        return shoppingItemDao.getShoppingItemsForList(listId)
+//    }
 
 //    suspend fun insertShoppingItem(shoppingItem: ShoppingItem) {
 //        shoppingItemDao.insert(shoppingItem)
@@ -126,16 +126,16 @@ class ShoppingRepository(
         return if (count == 0) baseName else "$baseName${count + 1}"
     }
 
-    fun getAllShoppingListsOrderByOrderIndex(): Flow<List<ShoppingList>>{
-        return shoppingListDao.getAllShoppingListsOrderByOrderIndex()
-    }
-    suspend fun getLastListOrderIndex(): Int?{
-        return shoppingListDao.getLastListOrderIndex()
-    }
-
-    suspend fun getListNameCount(name: String): Int{
-        return shoppingListDao.getListNameCount(name = name)
-    }
+//    fun getAllShoppingListsOrderByOrderIndex(): Flow<List<ShoppingList>>{
+//        return shoppingListDao.getAllShoppingListsOrderByOrderIndex()
+//    }
+//    suspend fun getLastListOrderIndex(): Int?{
+//        return shoppingListDao.getLastListOrderIndex()
+//    }
+//
+//    suspend fun getListNameCount(name: String): Int{
+//        return shoppingListDao.getListNameCount(name = name)
+//    }
 
     suspend fun updateShoppingListOrder(lists: List<ShoppingList>) {
         lists.forEach { list ->
@@ -149,4 +149,10 @@ class ShoppingRepository(
             shoppingItemDao.update(list)
         }
     }
+
+    // 空かどうか？
+    suspend fun hasAnyShoppingLists(): Boolean {
+        return shoppingListDao.hasAnyShoppingLists()
+    }
+
 }
