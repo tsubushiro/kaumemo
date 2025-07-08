@@ -69,7 +69,7 @@ class ShoppingRepository(
         return shoppingListDao.getAllShoppingListsOrderByOrderIndex()
     }
 
-    // ShpppingItemDao の新しいソート済み取得メソッドをラップ(上記のItem版)。
+    // ShoppingItemDao の新しいソート済み取得メソッドをラップ(上記のItem版)。
     fun getAllShoppingItemsSorted(listId:Int): Flow<List<ShoppingItem>> {
         return shoppingItemDao.getAllShoppingItemsOrderByOrderIndex(listId)
     }
@@ -107,6 +107,7 @@ class ShoppingRepository(
 
     // ViewModel側のcreateNewListをレポジトリ側へ（createDefaultShoppingListIfNeededは不要)
     suspend fun createNewListAndSwitchToIt() :Int{
+        Log.d("PerfLog", "createNewListAndSwitchToIt Start: ${System.currentTimeMillis()}")
         val newListName = generateNewShoppingListName()
         val newOrderIndex = (shoppingListDao.getLastListOrderIndex() ?: -1) + 1 // 後ろへ詰めるため
         val defaultList = ShoppingList(name = newListName, orderIndex = newOrderIndex)

@@ -52,6 +52,7 @@ fun AppNavHost(
             }
             // 初期画面
             composable("initialScreen") { backStackEntry ->
+                Log.d("PerfLog", "AppNavHost initialScreen get currentListId Start: ${System.currentTimeMillis()}")
                 // ApplicationContextを取得
                 val context = LocalContext.current.applicationContext
 
@@ -63,6 +64,7 @@ fun AppNavHost(
 
                 // sharedpreferences に保存した現在表示中のリストのIDを取得
                 val listId = appContextProvider.currentListId
+                Log.d("PerfLog", "AppNavHost initialScreen get currentListId End: ${System.currentTimeMillis()}")
                 ShoppingItemsScreen(
                     navController = navController,
                     listId = listId,

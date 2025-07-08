@@ -53,12 +53,14 @@ class ShoppingViewModel @Inject constructor(
     val scrollEvent  = _scrollToLastEvent.asSharedFlow()
 
     init{
+        Log.d("PerfLog", "ShoppingViewModel init Start: ${System.currentTimeMillis()}")
         viewModelScope.launch {
             currentListId.filterNotNull().first() // nullでなくなるまで待機
             _isLoading.value = false // ロード完了
             val appName = appContextProvider.getAppName()
             _toastMessage.emit("ようこそ、${appName}へ！")
         }
+        Log.d("PerfLog", "ShoppingViewModel init End: ${System.currentTimeMillis()}")
     }
     // リスト処理
     /**
@@ -69,13 +71,15 @@ class ShoppingViewModel @Inject constructor(
      * @return 最終的に決定されたリストID
      */
     private suspend fun determineAndSetInitialListId(preferredListId: Int?): Int {
+        Log.d("PerfLog", "determineAndSetInitialListId onCreate Start: ${System.currentTimeMillis()}")
         val allExistingLists = repository.getAllShoppingListsSorted().first() // 最新のリストデータを取得
 
-        return if (allExistingLists.isEmpty()) {
-            // 1. ShoppingListにデータがない場合: 新規のデータを作成してそのidを返す
+         return if (allExistingLists.isEmpty()) {
+             // 1. ShoppingListにデータがない場合: 新規のデータを作成してそのidを返す
             val newDefaultListId = repository.createNewListAndSwitchToIt()
             Log.d("ShoppingItemsViewModel", "DETERMINE: No lists found. Created new default list ID: $newDefaultListId")
-            _toastMessage.emit("リストがないため「新規リスト」を作成しました")
+             Log.d("PerfLog", "determineAndSetInitialListId p1: ${System.currentTimeMillis()}")
+             _toastMessage.emit("リストがないため「新規リスト」を作成しました")
             newDefaultListId
         } else {
             // preferredListIdが指定されており、かつそのIDのリストが存在するか確認
@@ -84,11 +88,13 @@ class ShoppingViewModel @Inject constructor(
             if (targetListExists) {
                 // 2. preferredListIdが有効な場合、それを返す
                 Log.d("ShoppingItemsViewModel", "DETERMINE: Valid preferredListId found. Using ID: $preferredListId")
+                Log.d("PerfLog", "determineAndSetInitialListId p2: ${System.currentTimeMillis()}")
                 preferredListId!! // nullチェック済みなので !! を使用
             } else {
                 // 3. preferredListIdが無効な場合（存在しない場合）、ソート順で一番若いリストにフォールバック
                 val firstListId = allExistingLists.first().id
                 Log.d("ShoppingItemsViewModel", "DETERMINE: PreferredListId $preferredListId not found or null. Fallback to first sorted list: $firstListId")
+                Log.d("PerfLog", "determineAndSetInitialListId p3: ${System.currentTimeMillis()}")
                 firstListId
             }
         }
@@ -103,6 +109,8 @@ class ShoppingViewModel @Inject constructor(
      */
     fun resolveAndSetCurrentListId(incomingListId: Int) {
         viewModelScope.launch(Dispatchers.IO) {
+            Log.d("PerfLog", "resolveAndSetCurrentListId start: ${System.currentTimeMillis()}")
+
             // 現在のViewModelの状態が既に最新であれば何もしない
             if (_currentListId.value == incomingListId) {
                 val allExistingLists = repository.getAllShoppingListsSorted().first() // 最新のリストデータを取得
@@ -119,6 +127,7 @@ class ShoppingViewModel @Inject constructor(
             _currentListId.value?.let {
                 appContextProvider.currentListId = it.toInt()
             }
+            Log.d("PerfLog", "resolveAndSetCurrentListId end: ${System.currentTimeMillis()}")
         }
     }
 
@@ -259,11 +268,13 @@ class ShoppingViewModel @Inject constructor(
      * @param listId 更新するリストのID
      */
     fun updateCurrentListId(listId: Int) {
+        Log.d("PerfLog", " updateCurrentListId Start: ${System.currentTimeMillis()}")
 //        _currentListId.value = listId
         // updateCurrentListId は resolveAndSetCurrentListId を呼び出すようにする
         // これにより、タブ選択で無効なIDが渡された場合もフォールバックロジックが適用される
         resolveAndSetCurrentListId(listId)
         Log.d("ShoppingItemsViewModel", "Current List ID updated to: $listId")
+        Log.d("PerfLog", " updateCurrentListId End: ${System.currentTimeMillis()}")
     }
 
     // リスト処理

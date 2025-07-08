@@ -2,6 +2,7 @@ package com.tsubushiro.kaumemo.common
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import androidx.core.content.edit
 import com.tsubushiro.kaumemo.R
 import dagger.hilt.EntryPoint
@@ -25,9 +26,11 @@ class AppContextProvider(private val context: Context) {
     // 買い物リスト
     var currentListId: Int
         get() {
+            Log.d("PerfLog", "AppContextProvider currentListId get: ${System.currentTimeMillis()}")
             return prefs.getInt("current_list_id", 0)
         }
         set(value) {
+            Log.d("PerfLog", "AppContextProvider currentListId set: ${System.currentTimeMillis()}")
             prefs.edit() { putInt("current_list_id", value) }
         }
 }

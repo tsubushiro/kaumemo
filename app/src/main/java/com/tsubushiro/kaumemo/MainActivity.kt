@@ -24,6 +24,7 @@ class MainActivity : ComponentActivity() {
     private val shoppingViewModel: ShoppingViewModel by viewModels() // 両方のViewModelを合成したViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        Log.d("PerfLog", "MainActivity Splash Screen Start: ${System.currentTimeMillis()}")
         // スプラッシュスクリーンをインストール
         val splashScreen = installSplashScreen()
 
@@ -34,6 +35,7 @@ class MainActivity : ComponentActivity() {
             shoppingViewModel.isLoading.value
         }
 
+        Log.d("PerfLog", "MainActivity Splash Screen End: ${System.currentTimeMillis()}")
         Log.d("PerfLog", "MainActivity onCreate Start: ${System.currentTimeMillis()}")
         setContent {
             KaumemoTheme {
