@@ -53,14 +53,14 @@ class ShoppingViewModel @Inject constructor(
     val scrollEvent  = _scrollToLastEvent.asSharedFlow()
 
     init{
-        Log.d("PerfLog", "ShoppingViewModel init Start: ${System.currentTimeMillis()}")
         viewModelScope.launch {
+            Log.d("PerfLog", "ShoppingViewModel init Start: ${System.currentTimeMillis()}")
             currentListId.filterNotNull().first() // nullでなくなるまで待機
             _isLoading.value = false // ロード完了
             val appName = appContextProvider.getAppName()
             _toastMessage.emit("ようこそ、${appName}へ！")
+            Log.d("PerfLog", "ShoppingViewModel init End: ${System.currentTimeMillis()}")
         }
-        Log.d("PerfLog", "ShoppingViewModel init End: ${System.currentTimeMillis()}")
     }
     // リスト処理
     /**
