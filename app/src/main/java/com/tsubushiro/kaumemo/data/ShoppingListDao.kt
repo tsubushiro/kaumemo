@@ -5,7 +5,9 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.RawQuery
 import androidx.room.Update
+import androidx.sqlite.db.SupportSQLiteQuery
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -44,4 +46,8 @@ interface ShoppingListDao {
     // 1 件でもあればTrue
     @Query("SELECT EXISTS(SELECT 1 FROM shopping_lists)")
     suspend fun hasAnyShoppingLists(): Boolean
+
+    // walをチェックポイントする(デバッグ用)
+    @RawQuery
+    suspend fun checkpoint(query: SupportSQLiteQuery): Int
 }

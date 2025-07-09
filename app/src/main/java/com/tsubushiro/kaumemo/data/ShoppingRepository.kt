@@ -1,6 +1,7 @@
 package com.tsubushiro.kaumemo.data
 
 import android.util.Log
+import androidx.sqlite.db.SimpleSQLiteQuery
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 
@@ -155,4 +156,9 @@ class ShoppingRepository(
         return shoppingListDao.hasAnyShoppingLists()
     }
 
+    // Walのデータをチェックポイントするメソッド
+    suspend fun forceWalCheckpoint(): Int {
+        val query = SimpleSQLiteQuery("PRAGMA wal_checkpoint(FULL)")
+        return shoppingListDao.checkpoint(query)
+    }
 }

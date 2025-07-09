@@ -25,7 +25,8 @@ object AppModule {
             context.applicationContext,
             AppDatabase::class.java,
             "kaumemo_db"
-        ).fallbackToDestructiveMigration() // 開発用
+        )
+            .createFromAsset("databases/initial.db") // 初回起動時にのみ使用する
             .build()
     }
 

@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tsubushiro.kaumemo.BuildConfig
 import com.tsubushiro.kaumemo.common.AppContextProvider
-import com.tsubushiro.kaumemo.data.AppDatabase
 import com.tsubushiro.kaumemo.data.ShoppingItem
 import com.tsubushiro.kaumemo.data.ShoppingList
 import com.tsubushiro.kaumemo.data.ShoppingRepository
@@ -32,7 +31,6 @@ class ShoppingViewModel @Inject constructor(
     private val repository: ShoppingRepository,
     savedStateHandle: SavedStateHandle, // ナビゲーション引数を受け取るため
     private val appContextProvider: AppContextProvider, // アプリの共通情報
-    private val appDatabase: AppDatabase // ★AppDatabaseをViewModelに注入！★
 ) : ViewModel() {
 
     // トーストの実装
@@ -360,12 +358,13 @@ class ShoppingViewModel @Inject constructor(
         }
     }
 
+    // walチェックポイントの実行
     fun runCheckpointForDebugging() {
         // リリースビルド時にはこのブロック内のコードは実行されない
         // かつ、コンパイラやR8/ProGuardによって最適化時に削除される
         if (BuildConfig.DEBUG) { // ★ここを追加★
             viewModelScope.launch(Dispatchers.IO) {
-                appDatabase.forceWalCheckpoint()
+                repository.forceWalCheckpoint()
                 _toastMessage.emit("DB Checkpoint Initiated")
                 // Log.d("DB_Checkpoint", "WAL Checkpoint initiated for debugging.")
             }
