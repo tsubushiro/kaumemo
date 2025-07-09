@@ -55,11 +55,11 @@ class ShoppingViewModel @Inject constructor(
 
     init{
         viewModelScope.launch {
-            val appName = appContextProvider.getAppName() // アプリ名取得
+//            val appName = appContextProvider.getAppName() // アプリ名取得
             Log.d("PerfLog", "ShoppingViewModel init Start: ${System.currentTimeMillis()}")
             currentListId.filterNotNull().first() // nullでなくなるまで待機
             _isLoading.value = false // ロード完了
-            _toastMessage.emit("ようこそ、${appName}へ！")
+//            _toastMessage.emit("ようこそ、${appName}へ！")
             Log.d("PerfLog", "ShoppingViewModel init End: ${System.currentTimeMillis()}")
         }
     }
