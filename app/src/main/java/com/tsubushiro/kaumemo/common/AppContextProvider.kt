@@ -33,6 +33,16 @@ class AppContextProvider(private val context: Context) {
             Log.d("PerfLog", "AppContextProvider currentListId set: ${System.currentTimeMillis()}")
             prefs.edit() { putInt("current_list_id", value) }
         }
+    // 初回起動完了
+    var isFirstLaunchCompleted: Boolean
+        get() {
+            Log.d("PerfLog", "AppContextProvider isFirstLaunchCompleted get: ${System.currentTimeMillis()}")
+            return prefs.getBoolean("is_first_launch_completed", false) // デフォルト値はfalse
+        }
+        set(value) {
+            Log.d("PerfLog", "AppContextProvider isFirstLaunchCompleted set: ${System.currentTimeMillis()}")
+            prefs.edit() { putBoolean("is_first_launch_completed", value) }
+        }
 }
 
 // EntryPointインターフェースの作成
