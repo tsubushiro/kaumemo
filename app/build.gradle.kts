@@ -65,6 +65,8 @@ dependencies {
     ksp(libs.androidx.room.compiler) //  ここだけimplementation をkspに変更
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.navigation.compose)
+    implementation("androidx.sqlite:sqlite:2.4.0") // または最新の安定版
+    implementation("androidx.sqlite:sqlite-ktx:2.4.0") // Kotlin拡張機能
     //
     implementation("com.google.dagger:hilt-android:2.56.2") // 最新のHiltバージョンに合わせる
     ksp("com.google.dagger:hilt-compiler:2.56.2") // kapt または ksp を使用

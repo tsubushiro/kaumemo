@@ -66,6 +66,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.tsubushiro.kaumemo.BuildConfig
 import com.tsubushiro.kaumemo.data.ShoppingItem
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -430,6 +431,7 @@ fun ShoppingItemsScreen(
             }
             item {
                 Spacer(modifier = Modifier.height(paddingValues.calculateBottomPadding())) // FABとBottomBarの高さ分を確保
+                DebugCheckpointButton(shoppingViewModel = shoppingItemsViewModel)
             }
         }
     }
@@ -671,4 +673,20 @@ fun ConfirmDeleteDialog(
             }
         }
     )
+}
+
+// デバッグ用チェックポイントボタン
+@Composable
+fun DebugCheckpointButton(
+    shoppingViewModel: ShoppingViewModel,
+    modifier: Modifier = Modifier
+) {
+    if (BuildConfig.DEBUG) { // デバッグビルド時のみ表示
+        Button(
+            onClick = { shoppingViewModel.runCheckpointForDebugging() },
+            modifier = modifier
+        ) {
+            Text("DBを強制チェックポイント (DEBUG)")
+        }
+    }
 }
