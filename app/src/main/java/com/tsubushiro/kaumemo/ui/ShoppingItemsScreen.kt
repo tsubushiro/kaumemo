@@ -8,6 +8,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -24,6 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -31,6 +33,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -302,7 +305,7 @@ fun ShoppingItemsScreen(
                                             // ★選択中のタブの文字色 (背景がSecondaryなのでonSecondaryが最適)★
                                             MaterialTheme.colorScheme.secondary
                                         } else {
-                                            MaterialTheme.colorScheme.onPrimaryContainer // 非選択のタブの文字色
+                                            MaterialTheme.colorScheme.onPrimary // 非選択のタブの文字色
                                         }
                                     )
                                 },
@@ -329,9 +332,56 @@ fun ShoppingItemsScreen(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }, // ★ScaffoldにSnackbarHostを設定★
         floatingActionButton = {
-            FloatingActionButton(onClick = { showAddItemDialog = true }) {
-                Icon(Icons.Filled.Add, "新しいアイテムを追加")
+            Box(
+                Modifier
+                    .padding(start = 32.dp)
+                    .fillMaxWidth()
+            ) {
+                // 左端FAB（右端と線対称の位置）
+                ExtendedFloatingActionButton(
+                    onClick = {  },
+                    icon = { Icon(Icons.Filled.SwapVert, contentDescription = "ソート") },
+                    text = { Text(text = "未完了を上へ",
+                        modifier = Modifier
+//                            .padding(start = 8.dp)
+                            .offset(x = (-8).dp),
+                        style = MaterialTheme.typography.bodyMedium
+                        )
+                           },
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(start = 16.dp),
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                )
+//                // 真ん中FAB（中央）
+//                FloatingActionButton(
+//                    onClick = { /* 中央の処理 */ },
+//                    modifier = Modifier.align(Alignment.BottomCenter)
+//                ) {
+//                    Icon(Icons.Filled.Add, contentDescription = "追加")
+//                }
+                // 右端FAB（通常の＋と同じ位置）
+                FloatingActionButton(
+                    onClick = { showAddItemDialog = true },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(end = 16.dp),
+//                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                ) {
+                    Icon(Icons.Filled.Add, "新しいアイテムを追加")
+                }
             }
+//            FloatingActionButton(onClick = { showAddItemDialog = true }) {
+//                Icon(Icons.Filled.Add, "新しいアイテムを追加")
+//            }
+//            Row(
+//                horizontalArrangement = Arrangement.End
+//            ) {
+//                Spacer(modifier = Modifier.width(64.dp))
+//                FloatingActionButton(onClick = { showAddItemDialog = true }) {
+//                    Icon(Icons.Filled.Add, "新しいアイテムを追加")
+//                }
+//            }
         },
         // ★ ここにbottomBarを追加し、広告Composableを配置 ★
         bottomBar = {
@@ -448,7 +498,7 @@ fun ShoppingItemsScreen(
                 }
                 item {
                     Spacer(modifier = Modifier.height(paddingValues.calculateBottomPadding())) // FABとBottomBarの高さ分を確保
-                    DebugCheckpointButton(shoppingViewModel = shoppingItemsViewModel)
+//                    DebugCheckpointButton(shoppingViewModel = shoppingItemsViewModel)
                 }
             }
         }

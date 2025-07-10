@@ -73,6 +73,8 @@ dependencies {
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     implementation("org.burnoutcrew.composereorderable:reorderable:0.9.6") // ドラッグアンドドロップ
     implementation(libs.androidx.core.splashscreen) // スプラッシュスクリーン
+    // https://mvnrepository.com/artifact/androidx.compose.material/material-icons-extended
+    implementation("androidx.compose.material:material-icons-extended:1.7.8")
     //
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
