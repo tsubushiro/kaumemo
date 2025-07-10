@@ -40,6 +40,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -309,7 +310,7 @@ fun ShoppingItemsScreen(
                                 modifier = if (selectedTabIndex == index) {
                                     Modifier
                                         .background(
-                                            color = MaterialTheme.colorScheme.background, // ★選択中のタブの背景色をアプリの背景色に★
+                                            color = MaterialTheme.colorScheme.surfaceVariant,
 //                                            shape = MaterialTheme.shapes.small // テーマで定義された角の丸みを使用
                                             // または RoundedCornerShape(8.dp) のように直接指定することも可能
                                         )
@@ -341,74 +342,90 @@ fun ShoppingItemsScreen(
             }
         }
     ) { paddingValues ->
-        LazyColumn(
-            state = state.listState, // ReorderableLazyListStateからLazyListStateを取得
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-                .reorderable(state) // reorderable修飾子を適
+        Surface( // ★ ここにSurfaceを追加 ★
+           color = MaterialTheme.colorScheme.surfaceVariant // ★ ここで背景色を指定 ★
+            // 例: 一般的なTodoアプリの背景色にするなら MaterialTheme.colorScheme.background
+            // 例: カスタムカラーなら Color(0xFFE0E0E0) など
         ) {
-            if (currentShoppingList == null){
-                item {
-                    Text(
-                        "アイテム読み込み中...",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
-            }else if (shoppingItems.isEmpty()) {
-                item {
-                    Text(
-                        "まだアイテムがありません。\n右下のボタンから新しいアイテムを追加しましょう！",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
-            } else {
-                itemsIndexed(shoppingItems, key = { _, item -> item.id }) { index, shoppingItem ->
-                    ReorderableItem(state, key = shoppingItem.id) { isDragging ->
-                        val elevation = animateDpAsState(if (isDragging) 16.dp else 0.dp, label = "elevationAnimation").value
-                        val alpha = animateFloatAsState(if (isDragging) 0.5f else 1f, label = "alphaAnimation").value
-                        val scale = animateFloatAsState(if (isDragging) 1.05f else 1f, label = "scaleAnimation").value
-
-                        LaunchedEffect(isDragging) {
-                            if (isDragging) {
-//                                Log.d("DragDebug", "ドラッグ開始: アイテム名 = ${shoppingItem.name}, ID = ${shoppingItem.id}")
-                                // ドラッグ開始の振動
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress) // 長押し相当のフィードバック
-                            } else {
-                                // ドラッグ終了時（ドロップまたはキャンセル）にもログが出ます
-//                                Log.d("DragDebug", "ドラッグ終了: アイテム名 = ${shoppingItem.name}, ID = ${shoppingItem.id}")
-                            }
-                        }
-
-                        ShoppingItemCard( // ★ShoppingItemCard Composableを呼び出す★
-                            shoppingItem = shoppingItem,
-                            onTogglePurchased = { shoppingItemsViewModel.toggleItemPurchased(it) },
-                            onEditClick = { itemToEdit ->
-                                editingItem = itemToEdit
-                                showEditItemDialog = true
-                            },
-                            onDeleteClick = { itemToDeleteConfirm ->
-                                itemToDelete = itemToDeleteConfirm
-                                showConfirmDeleteDialog = true
-                            },
+            LazyColumn(
+                state = state.listState, // ReorderableLazyListStateからLazyListStateを取得
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(horizontal = 8.dp, vertical = 8.dp)
+                    .reorderable(state) // reorderable修飾子を適
+            ) {
+                if (currentShoppingList == null) {
+                    item {
+                        Text(
+                            "アイテム読み込み中...",
                             modifier = Modifier
-                                .graphicsLayer { // ドラッグ時の視覚効果
-                                    scaleX = scale
-                                    scaleY = scale
-                                    this.alpha = alpha
-                                }
-                                .shadow(elevation, RoundedCornerShape(8.dp)) // マテリアルデザインの影
-                                .detectReorderAfterLongPress(state) // ★ドラッグ開始のジェスチャーをここに適用★
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            style = MaterialTheme.typography.bodyLarge
                         )
                     }
-                }
+                } else if (shoppingItems.isEmpty()) {
+                    item {
+                        Text(
+                            "まだアイテムがありません。\n右下のボタンから新しいアイテムを追加しましょう！",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                } else {
+                    itemsIndexed(
+                        shoppingItems,
+                        key = { _, item -> item.id }) { index, shoppingItem ->
+                        ReorderableItem(state, key = shoppingItem.id) { isDragging ->
+                            val elevation = animateDpAsState(
+                                if (isDragging) 16.dp else 0.dp,
+                                label = "elevationAnimation"
+                            ).value
+                            val alpha = animateFloatAsState(
+                                if (isDragging) 0.5f else 1f,
+                                label = "alphaAnimation"
+                            ).value
+                            val scale = animateFloatAsState(
+                                if (isDragging) 1.05f else 1f,
+                                label = "scaleAnimation"
+                            ).value
+
+                            LaunchedEffect(isDragging) {
+                                if (isDragging) {
+//                                Log.d("DragDebug", "ドラッグ開始: アイテム名 = ${shoppingItem.name}, ID = ${shoppingItem.id}")
+                                    // ドラッグ開始の振動
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress) // 長押し相当のフィードバック
+                                } else {
+                                    // ドラッグ終了時（ドロップまたはキャンセル）にもログが出ます
+//                                Log.d("DragDebug", "ドラッグ終了: アイテム名 = ${shoppingItem.name}, ID = ${shoppingItem.id}")
+                                }
+                            }
+
+                            ShoppingItemCard( // ★ShoppingItemCard Composableを呼び出す★
+                                shoppingItem = shoppingItem,
+                                onTogglePurchased = { shoppingItemsViewModel.toggleItemPurchased(it) },
+                                onEditClick = { itemToEdit ->
+                                    editingItem = itemToEdit
+                                    showEditItemDialog = true
+                                },
+                                onDeleteClick = { itemToDeleteConfirm ->
+                                    itemToDelete = itemToDeleteConfirm
+                                    showConfirmDeleteDialog = true
+                                },
+                                modifier = Modifier
+                                    .graphicsLayer { // ドラッグ時の視覚効果
+                                        scaleX = scale
+                                        scaleY = scale
+                                        this.alpha = alpha
+                                    }
+                                    .shadow(elevation, RoundedCornerShape(8.dp)) // マテリアルデザインの影
+                                    .detectReorderAfterLongPress(state) // ★ドラッグ開始のジェスチャーをここに適用★
+                            )
+                        }
+                    }
 //                 ドラッグアンドドロップによるソート対応前
 //                items(shoppingItems) { item ->
 //                    ShoppingItemCard(
@@ -428,10 +445,11 @@ fun ShoppingItemsScreen(
 ////                        }
 //                    )
 //                }
-            }
-            item {
-                Spacer(modifier = Modifier.height(paddingValues.calculateBottomPadding())) // FABとBottomBarの高さ分を確保
-                DebugCheckpointButton(shoppingViewModel = shoppingItemsViewModel)
+                }
+                item {
+                    Spacer(modifier = Modifier.height(paddingValues.calculateBottomPadding())) // FABとBottomBarの高さ分を確保
+                    DebugCheckpointButton(shoppingViewModel = shoppingItemsViewModel)
+                }
             }
         }
     }
@@ -497,7 +515,10 @@ fun ShoppingItemCard(
             .fillMaxWidth()
             .padding(vertical = 4.dp),
 //          .clickable{ onEditClick(shoppingItem) },
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(
+                containerColor = if (shoppingItem.isPurchased) MaterialTheme.colorScheme.surfaceContainerLow else MaterialTheme.colorScheme.surface, // ★ 背景を白に変更 ★
+        )
     ) {
         Row(
             modifier = Modifier
@@ -684,7 +705,13 @@ fun DebugCheckpointButton(
     if (BuildConfig.DEBUG) { // デバッグビルド時のみ表示
         Button(
             onClick = { shoppingViewModel.runCheckpointForDebugging() },
-            modifier = modifier
+            modifier = modifier,
+            // ボタンの色を警戒色に
+            colors =
+                ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.onError
+                )
         ) {
             Text("DBを強制チェックポイント (DEBUG)")
         }
