@@ -24,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material3.AlertDialog
@@ -163,6 +164,9 @@ fun ShoppingItemsScreen(
             }
         }
     }
+
+    // ショートメニューの展開
+    var showSortMenu by remember { mutableStateOf(false) }
 
     Scaffold(
 //        topBar = {
@@ -337,22 +341,45 @@ fun ShoppingItemsScreen(
                     .padding(start = 32.dp)
                     .fillMaxWidth()
             ) {
-                // 左端FAB（右端と線対称の位置）
-                ExtendedFloatingActionButton(
-                    onClick = {  },
-                    icon = { Icon(Icons.Filled.SwapVert, contentDescription = "ソート") },
-                    text = { Text(text = "未完了を上へ",
-                        modifier = Modifier
-//                            .padding(start = 8.dp)
-                            .offset(x = (-8).dp),
-                        style = MaterialTheme.typography.bodyMedium
-                        )
-                           },
+                Column(
                     modifier = Modifier
                         .align(Alignment.BottomStart)
-                        .padding(start = 16.dp),
+                        .padding(start = 8.dp),
+                    verticalArrangement = Arrangement.Bottom,
+                    horizontalAlignment = Alignment.Start
+                ){
+                    // 小さなFABを表示するだけ
+                    if (showSortMenu) {
+                        ExtendedFloatingActionButton(
+                            onClick = {
+                                // 「未完了を上へ」の処理
+                                showSortMenu = false
+                            },
+                            icon = { Icon(Icons.Filled.ArrowUpward, contentDescription = "未完了を上へ") },
+                            text = { Text("未完了を上へ") },
+                            modifier = Modifier.padding(bottom = 12.dp)
+                                .padding(start = 16.dp),
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        )
+                    }
+                    // 左端FAB（右端と線対称の位置）
+                    ExtendedFloatingActionButton(
+                        onClick = { showSortMenu = !showSortMenu },
+                        icon = { Icon(Icons.Filled.SwapVert, contentDescription = "ソート") },
+                        text = { Text(text = "並び替え",
+//                            modifier = Modifier
+////                            .padding(start = 8.dp)
+//                                .offset(x = (-8).dp),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        },
+                        modifier = Modifier
+//                            .align(Alignment.BottomStart)
+                            .padding(start = 16.dp),
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                )
+                    )
+                }
+
 //                // 真ん中FAB（中央）
 //                FloatingActionButton(
 //                    onClick = { /* 中央の処理 */ },
