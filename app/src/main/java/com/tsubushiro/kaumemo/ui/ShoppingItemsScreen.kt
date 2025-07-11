@@ -391,11 +391,15 @@ fun ShoppingItemsScreen(
 //                }
                 // 右端FAB（通常の＋と同じ位置）
                 FloatingActionButton(
-                    onClick = { showAddItemDialog = true },
+                    onClick = {
+                        showAddItemDialog = true
+                        showSortMenu=false
+                    },
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .padding(end = 16.dp),
 //                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
                 ) {
                     Icon(Icons.Filled.Add, "新しいアイテムを追加")
                 }

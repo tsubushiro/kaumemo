@@ -170,7 +170,7 @@ class ShoppingViewModel @Inject constructor(
             // データベースの更新
             // リポジトリを通じて永続化 (repository.updateShoppingItemOrderは複数のアイテムを更新できる前提)
             repository.updateShoppingItemOrder(updatedItems)
-            _snackbarMessage.emit("アイテムを未完了順に並べ替えました。")
+            _snackbarMessage.emit("アイテムを未完了順に並べ替えました！")
             // ソート後にリストの先頭にスクロールするイベントを発行
             _scrollEvent.emit(0) // 先頭 (インデックス0) へスクロール
         }

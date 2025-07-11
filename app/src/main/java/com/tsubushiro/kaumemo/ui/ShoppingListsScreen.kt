@@ -20,8 +20,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
@@ -144,8 +144,8 @@ fun ShoppingListsScreen(
                     ) {
                         IconButton(onClick = { navController.navigate("shopping_items_route/${currentListId}") }) {
                             Icon(
-                                Icons.AutoMirrored.Filled.List,
-                                contentDescription = "リスト一覧",
+                                Icons.Filled.Check,
+                                contentDescription = "アイテム一覧",
                                 tint = MaterialTheme.colorScheme.onPrimary
                             )
                         }
