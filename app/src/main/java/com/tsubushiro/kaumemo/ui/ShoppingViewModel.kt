@@ -50,8 +50,8 @@ class ShoppingViewModel @Inject constructor(
     val snackbarMessage = _snackbarMessage.asSharedFlow()
 
     // 追加時のスクロールイベント
-    private val _scrollToLastEvent = MutableSharedFlow<Unit>()
-    val scrollEvent  = _scrollToLastEvent.asSharedFlow()
+    private val _scrollEvent = MutableSharedFlow<Int>()
+    val scrollEvent  = _scrollEvent.asSharedFlow()
 
     init{
         viewModelScope.launch {
@@ -171,6 +171,8 @@ class ShoppingViewModel @Inject constructor(
             // リポジトリを通じて永続化 (repository.updateShoppingItemOrderは複数のアイテムを更新できる前提)
             repository.updateShoppingItemOrder(updatedItems)
             _snackbarMessage.emit("アイテムを未完了順に並べ替えました。")
+            // ソート後にリストの先頭にスクロールするイベントを発行
+            _scrollEvent.emit(0) // 先頭 (インデックス0) へスクロール
         }
     }
 
@@ -199,8 +201,9 @@ class ShoppingViewModel @Inject constructor(
             if (currentListIdValue != null) { // IDがnullでないことを確認
                 val newItem = ShoppingItem(listId = currentListIdValue, name = name) // ★ここを修正★
                 repository.insertShoppingItem(newItem)
+                val lastIndex = repository.getAllShoppingItemsSorted(currentListIdValue).first().lastIndex
                 // ★アイテム追加成功時にスクロールイベントをトリガー★
-                _scrollToLastEvent.emit(Unit)
+                _scrollEvent.emit(lastIndex)
                 // アイテム追加成功時にスナックバーメッセージを送信
 //                _snackbarMessage.emit("${newItem.name}を追加しました！")
 //                _toastMessage.emit("${newItem.name}を追加しました！")
@@ -362,8 +365,9 @@ class ShoppingViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             val newList = ShoppingList(name = name)
             repository.insertShoppingList(newList)
+            val lastIndex = repository.getAllShoppingItemsSorted(_currentListId.value!!).first().lastIndex
             // ★アイテム追加成功時にスクロールイベントをトリガー★
-            _scrollToLastEvent.emit(Unit)
+            _scrollEvent.emit(lastIndex)
         }
     }
 

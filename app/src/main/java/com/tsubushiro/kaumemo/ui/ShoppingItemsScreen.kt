@@ -154,14 +154,15 @@ fun ShoppingItemsScreen(
         }
     )
 
-    // ★追加: アイテム追加イベントを監視し、最新行にスクロール★
+    // ★追加: アイテム追加イベントを監視し、指定行にスクロール★
     LaunchedEffect(Unit) { // このLaunchedEffectはコンポーネントのライフサイクルに一度だけ起動
-        shoppingItemsViewModel.scrollEvent.collectLatest {
-            // アイテムが追加された後、リストが更新されるまで少し待つ
-            delay(50) // UIレンダリングのラグを考慮
-            if (shoppingItems.isNotEmpty()) {
-                state.listState.animateScrollToItem(shoppingItems.lastIndex)
-            }
+        shoppingItemsViewModel.scrollEvent.collectLatest { scrollIndex ->
+                // アイテムが追加された後、リストが更新されるまで少し待つ
+                delay(50) // UIレンダリングのラグを考慮
+                Log.d("ShoppingItemScreen", "scrollIndex: $scrollIndex")
+                if (shoppingItems.isNotEmpty()) {
+                    state.listState.animateScrollToItem(scrollIndex)
+                }
         }
     }
 
@@ -377,7 +378,7 @@ fun ShoppingItemsScreen(
                         modifier = Modifier
 //                            .align(Alignment.BottomStart)
                             .padding(start = 16.dp),
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        containerColor = if(!showSortMenu) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.onSecondaryContainer,
                     )
                 }
 
@@ -422,7 +423,6 @@ fun ShoppingItemsScreen(
     ) { paddingValues ->
         Surface( // ★ ここにSurfaceを追加 ★
            color = MaterialTheme.colorScheme.surfaceVariant // ★ ここで背景色を指定 ★
-            // 例: 一般的なTodoアプリの背景色にするなら MaterialTheme.colorScheme.background
             // 例: カスタムカラーなら Color(0xFFE0E0E0) など
         ) {
             LazyColumn(
