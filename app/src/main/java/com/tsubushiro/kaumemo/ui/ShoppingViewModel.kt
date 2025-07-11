@@ -139,6 +139,41 @@ class ShoppingViewModel @Inject constructor(
         }
     }
 
+    // 新規追加: 未完了アイテムを上にソートするロジック
+    fun sortItemsByPurchasedStatus() {
+        viewModelScope.launch(Dispatchers.IO) {
+            // 現在選択されているリストのIDを取得
+            val currentListIdValue = _currentListId.value
+            if (currentListIdValue == null) {
+                _snackbarMessage.emit("リストが選択されていません。")
+                return@launch
+            }
+
+            // 現在のアイテムリストを取得
+            // flowから直接取得することで、最新のDBの状態を反映
+            val currentItems = repository.getAllShoppingItemsSorted(currentListIdValue).first()
+                .toMutableList()
+
+            // 1. isPurchasedがfalseのアイテム（未完了）がisPurchasedがtrueのアイテム（完了）よりも前に来るようにソート
+            // 2. isPurchasedが同じ場合は、既存のorderIndexを維持するために安定ソートを使う
+            val sortedItems = currentItems.sortedWith(
+                compareBy<ShoppingItem> { it.isPurchased } // falseがtrueより前に来る
+                    .thenBy { it.orderIndex } // isPurchasedが同じ場合は既存のorderIndexでソート
+            )
+
+            // 新しい orderIndex を割り当てる
+            // ソートされた順序に基づいて、0から連番でorderIndexを振り直す
+            val updatedItems = sortedItems.mapIndexed { index, item ->
+                item.copy(orderIndex = index) // 各アイテムのコピーを作成し、orderIndexを現在のインデックスに設定
+            }
+
+            // データベースの更新
+            // リポジトリを通じて永続化 (repository.updateShoppingItemOrderは複数のアイテムを更新できる前提)
+            repository.updateShoppingItemOrder(updatedItems)
+            _snackbarMessage.emit("アイテムを未完了順に並べ替えました。")
+        }
+    }
+
     // アイテム処理
     val shoppingItems: StateFlow<List<ShoppingItem>> =
         _currentListId.filterNotNull() // nullが流れてくることを防ぐ

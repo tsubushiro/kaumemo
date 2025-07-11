@@ -352,13 +352,14 @@ fun ShoppingItemsScreen(
                     if (showSortMenu) {
                         ExtendedFloatingActionButton(
                             onClick = {
-                                // 「未完了を上へ」の処理
+                                // 「未完了を上へ」
+                                shoppingItemsViewModel.sortItemsByPurchasedStatus()
                                 showSortMenu = false
                             },
                             icon = { Icon(Icons.Filled.ArrowUpward, contentDescription = "未完了を上へ") },
                             text = { Text("未完了を上へ") },
                             modifier = Modifier.padding(bottom = 12.dp)
-                                .padding(start = 16.dp),
+                                .padding(start = 8.dp),
                             containerColor = MaterialTheme.colorScheme.secondaryContainer,
                         )
                     }
