@@ -20,6 +20,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // BuildConfig.DEBUG
     buildTypes {
         release {
             isMinifyEnabled = true // 参考書記載の高速化
@@ -27,12 +28,16 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            buildConfigField("boolean","DEBUG","false")
+        }
+        debug{
+            buildConfigField("boolean","DEBUG","true")
         }
     }
-
-    buildFeatures {
-        buildConfig = true
-    }
+//
+//    buildFeatures {
+//        buildConfig = true
+//    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
